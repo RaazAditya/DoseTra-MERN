@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import authRoutes from "./routes/authRoutes.js"
+import medicineRoutes from "./routes/medicineRoutes.js"
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(cors({
 }))
 
 // apis
-app.use("/api/v1/user", authRoutes)
+app.use("/api/v1/auth", authRoutes)
+app.use("/api/v1/medicine", medicineRoutes)
 
 export {app}

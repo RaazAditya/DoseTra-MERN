@@ -7,25 +7,26 @@ const medicineSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    name: { 
-        type: String, 
-        required: true 
-    },
-    brand: {
-        type: String,
-        required: true
+    name: {
+      type: String,
+      required: true,
     },
     dosage: {
-         type: String, 
-         required: true }, // e.g., "500mg"
+      type: String,
+      required: true,
+    }, // e.g., "500mg"
     form: {
       type: String,
-      enum: ["tablet", "syrup", "injection"],  //tablet and capsule is considered as similar
+      enum: ["tablet", "capsule", "syrup", "injection"], //tablet and capsule is considered as similar
       default: "tablet",
     },
-    instructions: { 
-        type: String
-     }, // e.g., "After meals"
+    frequency: {
+      type: String,
+      required: true
+    },
+    instructions: {
+      type: String,
+    }, // e.g., "After meals"
   },
   { timestamps: true }
 );
