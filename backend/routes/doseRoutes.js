@@ -1,13 +1,16 @@
-import { Router } from "express";
-const router = Router();
-import { takeDose, missDose, rescheduleDose, getLogs } from "../controllers/doseController";
-import auth from "../middleware/auth";
+import express from "express";
+import {
+  markTaken,
+  markMissed,
+  rescheduleDose,
+  getDoseLogs,
+} from "../controllers/doseController.js";
 
-router.use(auth);
+const router = express.Router();
 
-router.post("/:id/take", takeDose);
-router.post("/:id/miss", missDose);
+router.post("/:id/take", markTaken);
+router.post("/:id/miss", markMissed);
 router.put("/:id/reschedule", rescheduleDose);
-router.get("/logs", getLogs);
+router.get("/logs", getDoseLogs);
 
 export default router;

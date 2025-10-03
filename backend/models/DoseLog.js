@@ -1,13 +1,14 @@
-import { Schema, model } from "mongoose";
+import mongoose from "mongoose";
 
-const doseLogSchema = new Schema({
-  schedule: { type: Schema.Types.ObjectId, ref: "Schedule", required: true },
-  time: { type: Date, required: true },
-  status: {
-    type: String,
-    enum: ["taken", "missed", "rescheduled"],
-    required: true,
-  },
-}, { timestamps: true });
+const DoseLogSchema = new mongoose.Schema({
+  logId: { type: String, unique: true },
+  userId: String,
+  doseId: { type: mongoose.Schema.Types.String, ref: "Dose" },
+  action: { type: String, enum: ["taken", "missed", "rescheduled"] },
+  recordedAt: { type: Date, default: Date.now },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+});
 
-export default model("DoseLog", doseLogSchema);
+export default mongoose.model("DoseLog", DoseLogSchema);
+

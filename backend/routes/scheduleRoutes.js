@@ -1,14 +1,19 @@
-import { Router } from "express";
-const router = Router();
-import { createSchedule, getSchedules, getScheduleById, updateSchedule, deleteSchedule } from "../controllers/scheduleController";
-import auth from "../middleware/auth"; 
+import express from "express";
+import {
+  createSchedule,
+  getSchedules,
+  getSchedule,
+  updateSchedule,
+  deleteSchedule,
+} from "../controllers/scheduleController.js";
 
-router.use(auth);
+const router = express.Router();
 
 router.post("/", createSchedule);
 router.get("/", getSchedules);
-router.get("/:id", getScheduleById);
+router.get("/:id", getSchedule);
 router.put("/:id", updateSchedule);
 router.delete("/:id", deleteSchedule);
 
 export default router;
+
