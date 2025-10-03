@@ -1,54 +1,41 @@
-import DoseLog, { find } from "../models/DoseLog";
+import Dose from "../models/Dose.js";
+import DoseLog from "../models/DoseLog.js";
 
+// Mark dose as taken
+export const markTaken = async (req, res) => {
+  const dose = await Dose.findOneAndUpdate(
+    { doseId: req.params.id },
+    { status: "taken" },
+    { new: true }
+  );
+  await DoseLog.create({ doseId: req.params.id, action: "taken" });
+  res.json(dose);
+};
 
-export async function takeDose(req, res) {
-  try {
-    const scheduleId = req.params.id;
-    const log = new DoseLog({ schedule: scheduleId, time: new Date(), status: "taken" });
-    await log.save();
-    return res.json(log);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to mark taken" });
-  }
-}
+// Mark dose as missed
+export const markMissed = async (req, res) => {
+  const dose = await Dose.findOneAndUpdate(
+    { doseId: req.params.id },
+    { status: "missed" },
+    { new: true }
+  );
+  await DoseLog.create({ doseId: req.params.id, action: "missed" });
+  res.json(dose);
+};
 
-export async function missDose(req, res) {
-  try {
-    const scheduleId = req.params.id;
-    const log = new DoseLog({ schedule: scheduleId, time: new Date(), status: "missed" });
-    await log.save();
-    return res.json(log);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to mark missed" });
-  }
-}
+// Reschedule dose
+export const rescheduleDose = async (req, res) => {
+  const dose = await Dose.findOneAndUpdate(
+    { doseId: req.params.id },
+    { scheduledAt: req.body.scheduledAt },
+    { new: true }
+  );
+  await DoseLog.create({ doseId: req.params.id, action: "rescheduled" });
+  res.json(dose);
+};
 
-export async function rescheduleDose(req, res) {
-  try {
-    const scheduleId = req.params.id;
-    // Optionally, read a new time from body
-    const { newTime } = req.body;
-    const log = new DoseLog({
-      schedule: scheduleId,
-      time: newTime ? new Date(newTime) : new Date(),
-      status: "rescheduled",
-    });
-    await log.save();
-    return res.json(log);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to reschedule" });
-  }
-}
-
-export async function getLogs(req, res) {
-  try {
-    const logs = await find({}).populate("schedule");
-    return res.json(logs);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to fetch logs" });
-  }
-}
+// Get dose logs
+export const getDoseLogs = async (req, res) => {
+  const logs = await DoseLog.find();
+  res.json(logs);
+};
