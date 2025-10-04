@@ -4,6 +4,9 @@ import webpush from "web-push";
 import Dose from "../models/Dose.js";
 import Subscription from "../models/Subscription.js";
 import Notification from "../models/Notification.js";
+import dotenv from "dotenv";
+dotenv.config();
+
 
 
 //  Email Setup (Nodemailer)
@@ -22,6 +25,8 @@ const vapidKeys = {
   publicKey: process.env.VAPID_PUBLIC,
   privateKey: process.env.VAPID_PRIVATE,
 };
+
+console.log("Loaded VAPID keys:", vapidKeys); 
 
 webpush.setVapidDetails(
   "mailto:yourgmail@gmail.com", // your contact email
