@@ -74,13 +74,7 @@ export const updateProfile = asyncHandler(async (req, res) => {
   if (name && typeof name === "string" && name.trim().length >= 2) {
     user.name = name.trim();
   }
-  if (timezone && typeof timezone === "string") {
-    const validTimezones = Intl.supportedValuesOf("timeZone");
-    if (!validTimezones.includes(timezone)) {
-      return res.status(400).json({ message: "Invalid timezone provided" });
-    }
-    user.timezone = timezone;
-  }
+  
 
   if (settings && typeof settings === "object") {
     user.settings = { ...user.settings, ...settings };
