@@ -1,63 +1,43 @@
-import Schedule, { find, findOne, findOneAndUpdate } from "../models/Schedule";
+import Schedule from "../models/Schedule.js";
 
-export async function createSchedule(req, res) {
+// Create Schedule
+export const createSchedule = async (req, res) => {
   try {
-    const sched = new Schedule({ ...req.body, user: req.user._id });
-    await sched.save();
-    return res.status(201).json(sched);
+    const schedule = await Schedule.create(req.body);
+    res.status(201).json(schedule);
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Failed to create schedule" });
+    res.status(400).json({ error: err.message });
   }
-}
+};
 
-export async function getSchedules(req, res) {
-  try {
-    const schedules = await find({ user: req.user._id, active: true });
-    return res.json(schedules);
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Failed to fetch schedules" });
-  }
-}
+// Get All Schedules
+export const getSchedules = async (req, res) => {
+  const schedules = await Schedule.find();
+  res.json(schedules);
+};
 
-export async function getScheduleById(req, res) {
-  try {
-    const sched = await findOne({ _id: req.params.id, user: req.user._id });
-    if (!sched) return res.status(404).json({ error: "Not found" });
-    return res.json(sched);
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Failed to fetch schedule" });
-  }
-}
+// Get One Schedule
+export const getSchedule = async (req, res) => {
+  const schedule = await Schedule.findOne({ scheduleId: req.params.id });
+  if (!schedule) return res.status(404).json({ error: "Not Found" });
+  res.json(schedule);
+};
 
-export async function updateSchedule(req, res) {
-  try {
-    const updated = await findOneAndUpdate(
-      { _id: req.params.id, user: req.user._id },
-      req.body,
-      { new: true }
-    );
-    if (!updated) return res.status(404).json({ error: "Not found" });
-    return res.json(updated);
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Failed to update" });
-  }
-}
+// Update Schedule
+export const updateSchedule = async (req, res) => {
+  const schedule = await Schedule.findOneAndUpdate(
+    { scheduleId: req.params.id },
+    req.body,
+    { new: true }
+  );
+  res.json(schedule);
+};
 
-export async function deleteSchedule(req, res) {
-  try {
-    const deactivated = await findOneAndUpdate(
-      { _id: req.params.id, user: req.user._id },
-      { active: false },
-      { new: true }
-    );
-    if (!deactivated) return res.status(404).json({ error: "Not found" });
-    return res.json(deactivated);
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Failed to deactivate" });
-  }
-}
+// Delete/Deactivate Schedule
+export const deleteSchedule = async (req, res) => {
+  await Schedule.findOneAndUpdate(
+    { scheduleId: req.params.id },
+    { active: false }
+  );
+  res.json({ message: "Schedule deactivated" });
+};

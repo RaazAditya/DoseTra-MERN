@@ -1,14 +1,17 @@
-import { Schema, model } from "mongoose";
+import mongoose from "mongoose";
 
-const scheduleSchema = new Schema(
-  {
-    user: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    medicineName: { type: String, required: true },
-    dosage: { type: String, required: true },
-    times: [String],
-    active: { type: Boolean, default: true },
-  },
-  { timestamps: true }
-);
+const ScheduleSchema = new mongoose.Schema({
+  scheduleId: { type: String, unique: true },
+  medicaineId: { type: String },
+  dosage: String,
+  frequency: String,
+  startDate: Date,
+  endDate: Date,
+  times: [String], // JSON array of times
+  active: { type: Boolean, default: true },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+});
 
-export default model("Schedule", scheduleSchema);
+export default mongoose.model("Schedule", ScheduleSchema);
+
