@@ -10,7 +10,7 @@ const getAuthConfig = () => {
 
 export const getMedicines = async () => {
   const res = await axios.get(MEDICINE_API, getAuthConfig());
-  return res.data;
+  return res.data.data;
 };
 
 export const getMedicineById = async (id) => {

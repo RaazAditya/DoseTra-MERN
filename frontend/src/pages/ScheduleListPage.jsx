@@ -13,26 +13,11 @@ export default function ScheduleListPage() {
   const pageSize = 10;
   const navigate = useNavigate();
 
-  // Dummy data commented out
-  /*
-  const dummySchedules = Array.from({ length: 25 }, (_, i) => ({
-    _id: (i + 1).toString(),
-    scheduleId: `sch-${i + 1}`,
-    medicineId: { _id: `m${i + 1}`, name: `Medicine ${i + 1}`, type: "Tablet" },
-    dosage: `${500 + i}mg`,
-    frequency: i % 2 === 0 ? "Twice a day" : "Once a day",
-    times: ["08:00", "20:00"],
-    startDate: "2025-10-01T00:00:00.000Z",
-    endDate: "2025-10-07T00:00:00.000Z",
-    active: i % 2 === 0,
-  }));
-  */
-
   useEffect(() => {
     const fetchSchedules = async () => {
       try {
         setLoading(true);
-        const res = await axios.get("/api/schedules");
+        const res = await axios.get("http://localhost:7000/api/schedules");
         setSchedules(Array.isArray(res.data) ? res.data : res.data.schedules || []);
       } catch (err) {
         console.error(err);
@@ -48,7 +33,7 @@ export default function ScheduleListPage() {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this schedule?")) return;
     try {
-      await axios.delete(`/api/schedules/${id}`);
+      await axios.delete(`http://localhost:7000/api/schedules/${id}`);
       setSchedules((prev) => prev.filter((s) => s._id !== id));
     } catch (err) {
       console.error(err);
@@ -56,17 +41,20 @@ export default function ScheduleListPage() {
     }
   };
 
-  // Filter schedules
+  // Filtering
   const filteredSchedules = schedules
-    .filter((sch) =>
-      sch.medicineId?.name.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    .filter((sch) =>
-      filter ? sch.medicineId?.type.toLowerCase() === filter.toLowerCase() : true
-    );
+    .filter((sch) => {
+      const medName = sch.medicineId?.name || "";
+      return medName.toLowerCase().includes(searchQuery.toLowerCase());
+    })
+    .filter((sch) => {
+      const medForm = sch.medicineId?.form || "";
+      return filter ? medForm.toLowerCase() === filter.toLowerCase() : true;
+    });
 
+  // Pagination
   const totalPages = Math.ceil(filteredSchedules.length / pageSize);
-  const paginatedSchedule = filteredSchedules.slice(
+  const paginatedSchedules = filteredSchedules.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
@@ -86,7 +74,7 @@ export default function ScheduleListPage() {
         {Array.from({ length: totalPages }, (_, idx) => (
           <button
             key={idx + 1}
-            className={`px-3 py-1 rounded  ${
+            className={`px-3 py-1 rounded ${
               currentPage === idx + 1
                 ? "bg-indigo-600 text-white font-semibold"
                 : "bg-gray-200 text-gray-600"
@@ -96,6 +84,7 @@ export default function ScheduleListPage() {
             {idx + 1}
           </button>
         ))}
+
         <button
           onClick={() => setCurrentPage((idx) => Math.min(idx + 1, totalPages))}
           disabled={currentPage === totalPages}
@@ -162,6 +151,7 @@ export default function ScheduleListPage() {
               <thead className="bg-slate-200">
                 <tr>
                   <th className="p-3 text-left">Medicine</th>
+                  <th className="p-3 text-left">Form</th>
                   <th className="p-3 text-left">Dosage</th>
                   <th className="p-3 text-left">Frequency</th>
                   <th className="p-3 text-left">Times</th>
@@ -172,14 +162,19 @@ export default function ScheduleListPage() {
                 </tr>
               </thead>
               <tbody>
-                {paginatedSchedule.map((sch) => (
+                {paginatedSchedules.map((sch) => (
                   <tr key={sch._id} className="border-b hover:bg-indigo-50/60">
                     <td className="p-3">{sch.medicineId?.name || "-"}</td>
+                    <td className="p-3">{sch.medicineId?.form || "-"}</td>
                     <td className="p-3">{sch.dosage}</td>
                     <td className="p-3">{sch.frequency}</td>
                     <td className="p-3">{sch.times?.join(", ")}</td>
-                    <td className="p-3">{new Date(sch.startDate).toLocaleDateString()}</td>
-                    <td className="p-3">{new Date(sch.endDate).toLocaleDateString()}</td>
+                    <td className="p-3">
+                      {sch.startDate ? new Date(sch.startDate).toLocaleDateString() : "-"}
+                    </td>
+                    <td className="p-3">
+                      {sch.endDate ? new Date(sch.endDate).toLocaleDateString() : "-"}
+                    </td>
                     <td className="p-3">{sch.active ? "Active" : "Inactive"}</td>
                     <td className="p-3 flex gap-2">
                       <Button
@@ -206,6 +201,7 @@ export default function ScheduleListPage() {
               </tbody>
             </table>
           </div>
+
           <div className="mt-4 flex justify-center">
             <Pagination />
           </div>

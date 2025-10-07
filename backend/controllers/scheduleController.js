@@ -12,8 +12,12 @@ export const createSchedule = async (req, res) => {
 
 // Get All Schedules
 export const getSchedules = async (req, res) => {
-  const schedules = await Schedule.find();
-  res.json(schedules);
+  try {
+    const schedules = await Schedule.find().populate("medicineId"); // populate name & type
+    res.json(schedules);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
 // Get One Schedule
