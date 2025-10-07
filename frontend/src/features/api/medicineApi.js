@@ -1,26 +1,36 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:7000/api/v1/medicine";
+const MEDICINE_API = "http://localhost:7000/api/v1/medicine";
 
-const getToken = () => localStorage.getItem("token");
+const getAuthConfig = () => {
+  const token = localStorage.getItem("token");
+  return { headers: { Authorization: `Bearer ${token}` } };
+};
 
-export const addMedicineAPI = async (medicineData) => {
-  const res = await axios.post(API_URL, medicineData, {
-    headers: { Authorization: `Bearer ${getToken()}` }
+
+export const getMedicines = async () => {
+  const res = await axios.get(MEDICINE_API, getAuthConfig(),{
+    params: {page, limit, search, filter}
   });
   return res.data;
 };
 
-export const fetchMedicinesAPI = async () => {
-  const res = await axios.get(API_URL, {
-    headers: { Authorization: `Bearer ${getToken()}` }
-  });
-  return res.data.data;
+export const getMedicineById = async (id) => {
+  const res = await axios.get(`${MEDICINE_API}/${id}`, getAuthConfig());
+  return res.data;
 };
 
-export const deleteMedicineAPI = async (id) => {
-  const res = await axios.delete(`${API_URL}/${id}`, {
-    headers: { Authorization: `Bearer ${getToken()}` }
-  });
+export const createMedicine = async (data) => {
+  const res = await axios.post(MEDICINE_API, data, getAuthConfig());
+  return res.data;
+};
+
+export const updateMedicine = async (id, data) => {
+  const res = await axios.put(`${MEDICINE_API}/${id}`, data, getAuthConfig());
+  return res.data;
+};
+
+export const deleteMedicine = async (id) => {
+  const res = await axios.delete(`${MEDICINE_API}/${id}`, getAuthConfig());
   return res.data;
 };

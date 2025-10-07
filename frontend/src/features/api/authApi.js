@@ -12,6 +12,16 @@ export const loginUser = async (formData) => {
   return res.data;
 };
 
+const handleLogin = async (formData) => {
+  try {
+    const data = await loginUser(formData);
+    const token = data.token; // usually the backend returns { token, user }
+    localStorage.setItem("token", token); // store token
+  } catch (err) {
+    console.error(err);
+  }
+};
+
 export const getProfile = async (token) => {
   const res = await axios.get(`${USER_API}/profile`, {
     headers: { Authorization: `Bearer ${token}` },

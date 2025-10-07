@@ -66,15 +66,11 @@ export const updateMedicine = asyncHandler(async (req, res) => {
     .json({ message: "Medicine updated successfully", medicine });
 });
 
-export const deleteMedicine = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  const medicine = await Medicine.findOneAndDelete({
-    _id: id,
-    userId: req.user.id,
-  });
-  if (!medicine) {
-    return res.status(404).json({ message: "Medicine not found" });
-  }
-  await medicine.deleteOne();
-  return res.status(200).json({ message: "Medicine deleted successfully" });
+export const deleteMedicine = asyncHandler(async(req, res) => {
+    const { id } = req.params;
+    const medicine = await Medicine.findOneAndDelete({ _id: id, userId: req.user.id });
+    if (!medicine) {
+        return res.status(404).json({ message: "Medicine not found" });
+    }
+    return res.status(200).json({ message: "Medicine deleted successfully" });
 });
