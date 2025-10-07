@@ -1,169 +1,231 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { Edit, Plus, Search, Trash } from "lucide-react";
+import { Button } from "../components/ui/button";
+import axios from "axios"; // Backend integration
 
 export default function ScheduleListPage() {
   const [schedules, setSchedules] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const [filter, setFilter] = useState("");
+  const pageSize = 10;
+  const navigate = useNavigate();
 
-  // Fetch schedules from backend
-//   useEffect(() => {
-//     const fetchSchedules = async () => {
-//       try {
-//         const res = await axios.get("/api/schedules");
-//         setSchedules(res.data);
-//       } catch (err) {
-//         console.error("Error fetching schedules:", err);
-//       }
-//     };
-//     fetchSchedules();
-useEffect(() => {
-    // Dummy data (replace with API)
-    setSchedules([
-      { _id: 1, medicineName: "Paracetamol", time: new Date(), status: "active" },
-      { _id: 2, medicineName: "Vitamin D", time: new Date(), status: "paused" },
-      { _id: 3, medicineName: "Vitamin E", time: new Date(), status: "paused" },
-      { _id: 4, medicineName: "Zinc Tablet", time: new Date(), status: "active" },
-      { _id: 5, medicineName: "Omega 3", time: new Date(), status: "paused" },
-      { _id: 1, medicineName: "Paracetamol", time: new Date(), status: "active" },
-      { _id: 2, medicineName: "Vitamin D", time: new Date(), status: "paused" },
-      { _id: 3, medicineName: "Vitamin E", time: new Date(), status: "paused" },
-      { _id: 4, medicineName: "Zinc Tablet", time: new Date(), status: "active" },
-      { _id: 5, medicineName: "Omega 3", time: new Date(), status: "paused" },
-    ]);
+  // Dummy data commented out
+  /*
+  const dummySchedules = Array.from({ length: 25 }, (_, i) => ({
+    _id: (i + 1).toString(),
+    scheduleId: `sch-${i + 1}`,
+    medicineId: { _id: `m${i + 1}`, name: `Medicine ${i + 1}`, type: "Tablet" },
+    dosage: `${500 + i}mg`,
+    frequency: i % 2 === 0 ? "Twice a day" : "Once a day",
+    times: ["08:00", "20:00"],
+    startDate: "2025-10-01T00:00:00.000Z",
+    endDate: "2025-10-07T00:00:00.000Z",
+    active: i % 2 === 0,
+  }));
+  */
+
+  useEffect(() => {
+    const fetchSchedules = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get("/api/schedules");
+        setSchedules(Array.isArray(res.data) ? res.data : res.data.schedules || []);
+      } catch (err) {
+        console.error(err);
+        setSchedules([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSchedules();
   }, []);
 
-  // Delete handler
   const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this schedule?")) return;
     try {
       await axios.delete(`/api/schedules/${id}`);
-      setSchedules((prev) => prev.filter((item) => item._id !== id));
+      setSchedules((prev) => prev.filter((s) => s._id !== id));
     } catch (err) {
-      console.error("Error deleting schedule:", err);
+      console.error(err);
+      alert("Failed to delete schedule.");
     }
   };
 
-  // Update handler (placeholder)
-  const handleUpdate = (id) => {
-    alert(`Update schedule for ID: ${id}`);
+  // Filter schedules
+  const filteredSchedules = schedules
+    .filter((sch) =>
+      sch.medicineId?.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .filter((sch) =>
+      filter ? sch.medicineId?.type.toLowerCase() === filter.toLowerCase() : true
+    );
+
+  const totalPages = Math.ceil(filteredSchedules.length / pageSize);
+  const paginatedSchedule = filteredSchedules.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  const Pagination = () => {
+    if (totalPages <= 1) return null;
+    return (
+      <div className="flex gap-2">
+        <button
+          onClick={() => setCurrentPage((idx) => Math.max(idx - 1, 1))}
+          disabled={currentPage === 1}
+          className="px-3 py-1 border rounded hover:bg-gray-200 disabled:opacity-50"
+        >
+          Prev
+        </button>
+
+        {Array.from({ length: totalPages }, (_, idx) => (
+          <button
+            key={idx + 1}
+            className={`px-3 py-1 rounded  ${
+              currentPage === idx + 1
+                ? "bg-indigo-600 text-white font-semibold"
+                : "bg-gray-200 text-gray-600"
+            }`}
+            onClick={() => setCurrentPage(idx + 1)}
+          >
+            {idx + 1}
+          </button>
+        ))}
+        <button
+          onClick={() => setCurrentPage((idx) => Math.min(idx + 1, totalPages))}
+          disabled={currentPage === totalPages}
+          className="px-3 py-1 border rounded hover:bg-gray-200 disabled:opacity-50"
+        >
+          Next
+        </button>
+      </div>
+    );
   };
 
-  //  Pagination
-  const totalPages = Math.ceil(schedules.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentItems = schedules.slice(startIndex, startIndex + itemsPerPage);
-
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100">
-      {/* Navbar */}
-      <nav className="bg-slate-800 text-white px-6 py-4 shadow-md flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Medicine Schedules</h1>
-        <button
-          onClick={() => (window.location.href = "/add-schedule")}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition"
-        >
-          + Add New
-        </button>
-      </nav>
-
-      {/* Main Content */}
-      <main className="flex-grow p-6">
-        <div className="space-y-4 max-w-3xl mx-auto">
-          {currentItems.length > 0 ? (
-            currentItems.map((s) => (
-              <div
-                key={s._id}
-                className="bg-gray-50 p-5 rounded-2xl shadow-md border-l-4 border-slate-400 hover:shadow-lg transition-all duration-300"
-              >
-                <div className="flex justify-between items-center mb-3">
-                  <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                     {s.medicineName}
-                  </h2>
-                  <span className="bg-blue-100 text-blue-400 px-3 py-1 rounded-full text-sm font-medium">
-                    {new Date(s.time).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </span>
-                </div>
-
-                <p className="text-gray-600 mb-3">
-                  Date:{" "}
-                  {new Date(s.time).toLocaleDateString([], {
-                    weekday: "short",
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </p>
-
-                <span
-                  className={`text-sm font-medium px-3 py-1 rounded-full ${
-                    s.status === "active"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-yellow-100 text-yellow-700"
-                  }`}
-                >
-                  {s.status}
-                </span>
-
-                <div className="flex gap-3 mt-3">
-                  <button
-                    onClick={() => handleUpdate(s._id)}
-                    className="bg-blue-500 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition"
-                  >
-                    Update
-                  </button>
-                  <button
-                    onClick={() => handleDelete(s._id)}
-                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className="text-center text-gray-600 mt-10">
-              No medicine schedules found.
-            </p>
-          )}
+    <div className="min-h-screen p-8 bg-slate-100">
+      {/* Top controls */}
+      <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
+        <div className="flex items-center gap-2 mb-2 md:mb-0">
+          <h1 className="text-3xl font-bold text-gray-800">Your Schedules</h1>
+          <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-medium">
+            {schedules.length} total
+          </span>
         </div>
+        <div className="flex gap-2 items-center">
+          <div className="relative">
+            <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
+              placeholder="Search medicines"
+              className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-indigo-400 bg-white text-gray-800 transition text-sm"
+            />
+          </div>
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="px-4 py-2 border border-gray-200 rounded-lg text-sm bg-white text-gray-700 focus:outline-none"
+          >
+            <option value="">All forms</option>
+            <option value="tablet">Tablet</option>
+            <option value="capsule">Capsule</option>
+            <option value="syrup">Syrup</option>
+            <option value="injection">Injection</option>
+          </select>
+          <Button
+            onClick={() => navigate("/schedules/new")}
+            className="flex items-center gap-2 bg-slate-900 hover:bg-slate-700 text-white shadow-md"
+          >
+            <Plus className="w-4 h-4" /> Add Schedule
+          </Button>
+        </div>
+      </div>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex justify-center items-center mt-6 gap-2">
+      {loading ? (
+        <p>Loading schedules...</p>
+      ) : filteredSchedules.length === 0 ? (
+        <p>No schedules found.</p>
+      ) : (
+        <>
+          <div className="overflow-x-auto">
+            <table className="w-full bg-white rounded shadow">
+              <thead className="bg-slate-200">
+                <tr>
+                  <th className="p-3 text-left">Medicine</th>
+                  <th className="p-3 text-left">Dosage</th>
+                  <th className="p-3 text-left">Frequency</th>
+                  <th className="p-3 text-left">Times</th>
+                  <th className="p-3 text-left">Start Date</th>
+                  <th className="p-3 text-left">End Date</th>
+                  <th className="p-3 text-left">Status</th>
+                  <th className="p-3 text-left">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedSchedule.map((sch) => (
+                  <tr key={sch._id} className="border-b hover:bg-indigo-50/60">
+                    <td className="p-3">{sch.medicineId?.name || "-"}</td>
+                    <td className="p-3">{sch.dosage}</td>
+                    <td className="p-3">{sch.frequency}</td>
+                    <td className="p-3">{sch.times?.join(", ")}</td>
+                    <td className="p-3">{new Date(sch.startDate).toLocaleDateString()}</td>
+                    <td className="p-3">{new Date(sch.endDate).toLocaleDateString()}</td>
+                    <td className="p-3">{sch.active ? "Active" : "Inactive"}</td>
+                    <td className="p-3 flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="hover:bg-indigo-50 hover:text-indigo-700 focus:ring-2 focus:ring-indigo-400"
+                        onClick={() => navigate(`/schedules/edit/${sch._id}`)}
+                        title="Edit"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-red-400 text-red-500 hover:bg-red-50 hover:text-red-600 focus:ring-2 focus:ring-red-300"
+                        onClick={() => handleDelete(sch._id)}
+                        title="Delete"
+                      >
+                        <Trash className="w-4 h-4" />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="mt-4 flex justify-center">
+            <Pagination />
+          </div>
+
+          <div className="flex gap-2 flex-wrap justify-end mt-4">
             <button
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((p) => p - 1)}
-              className={`px-3 py-2 rounded-md ${
-                currentPage === 1
-                  ? "bg-gray-300 cursor-not-allowed"
-                  : "bg-slate-800 hover:bg-slate-700 text-white"
-              }`}
+              onClick={() => alert("Export CSV functionality pending")}
+              className="px-4 py-2 bg-purple-200 rounded hover:bg-purple-300"
             >
-              Prev
+              Export CSV
             </button>
-
-            <span className="text-gray-700 font-medium">
-              Page {currentPage} of {totalPages}
-            </span>
-
             <button
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage((p) => p + 1)}
-              className={`px-3 py-2 rounded-md ${
-                currentPage === totalPages
-                  ? "bg-gray-300 cursor-not-allowed"
-                  : "bg-slate-800 hover:bg-slate-700 text-white"
-              }`}
+              onClick={() => window.print()}
+              className="px-4 py-2 bg-purple-200 rounded hover:bg-purple-300"
             >
-              Next
+              Print List
             </button>
           </div>
-        )}
-      </main>
-
-      
+        </>
+      )}
     </div>
   );
 }
