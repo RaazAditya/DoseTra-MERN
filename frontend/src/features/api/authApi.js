@@ -15,7 +15,7 @@ export const loginUser = async (formData) => {
 const handleLogin = async (formData) => {
   try {
     const data = await loginUser(formData);
-    const token = data.token; // usually the backend returns { token, user }
+    const token = data.token; 
     localStorage.setItem("token", token); // store token
   } catch (err) {
     console.error(err);
@@ -41,6 +41,14 @@ export const updateUserProfile = async (updatedData, token) => {
   } catch (error) {
     throw error.response?.data || { message: "Update failed" };
   }
+};
+
+// Delete user profile
+export const deleteUserProfile = async (token) => {
+  const res = await axios.delete(`${USER_API}/profile`,{
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data;
 };
 
 export const getDashboardSummary = async (token) => {

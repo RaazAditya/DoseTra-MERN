@@ -425,7 +425,7 @@ const MedicineListPage = () => {
                         size="sm"
                         variant="outline"
                         className="hover:bg-indigo-50 hover:text-indigo-700 focus:ring-2 focus:ring-indigo-400"
-                        onClick={() => navigate(`/medicine-form/${med.id}`)}
+                        onClick={() => navigate(`/medicine-form/${med._id}`)}
                         aria-label="Edit medicine"
                         tabIndex={0}
                         title="Edit"
