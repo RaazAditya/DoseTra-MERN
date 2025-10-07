@@ -71,6 +71,5 @@ export const deleteMedicine = asyncHandler(async(req, res) => {
     if (!medicine) {
         return res.status(404).json({ message: "Medicine not found" });
     }
-    await medicine.deleteOne();
     return res.status(200).json({ message: "Medicine deleted successfully" });
 });

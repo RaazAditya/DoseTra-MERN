@@ -8,16 +8,13 @@ import LoginPage from "./pages/authPages/LoginPage";
 import ProfilePage from "./pages/authPages/ProfilePage";
 import { useDispatch } from "react-redux";
 import { loadUser } from "./features/authSlice";
-<<<<<<< HEAD
 import ScheduleListPage from "./pages/ScheduleListPage";
 import ScheduleFormPage from "./pages/ScheduleFormPage";
-import DoseLogPage from "./pages/DoseLogPage";
+import DoseLogPage from "./pages/medPages/DoseLogPage";
 
-=======
 import DashboardPage from "./pages/DashboardPage";
-// import MedicineListPage from "./pages/medPages/MedicineListPage";
-// import MedicineFormPage from "./pages/medPages/MedicineFormPage";
->>>>>>> origin/main
+import MedicineListPage from "./pages/medPages/MedicineListPage";
+import MedicineFormPage from "./pages/medPages/MedicineFormPage";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -33,15 +30,12 @@ const App = () => {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/get" element={<ProfilePage />} />
-<<<<<<< HEAD
         <Route path="/schedulelist" element={<ScheduleListPage />} />
         <Route path="/add-schedule" element={<ScheduleFormPage />} />
         <Route path="/dose-logs" element={<DoseLogPage />} />
-=======
         <Route path="/dashboard" element={<DashboardPage/>}/>
-        {/* <Route path="/medicines" element={<MedicineListPage/>}/>
-        <Route path="/medicine-form" element={<MedicineFormPage/>}/> */}
->>>>>>> origin/main
+        <Route path="/medicines" element={<MedicineListPage/>}/>
+        <Route path="/medicine-form" element={<MedicineFormPage/>}/>
       </Routes>
       <Footer />
     </div>
