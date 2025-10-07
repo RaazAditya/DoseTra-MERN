@@ -9,9 +9,7 @@ const getAuthConfig = () => {
 
 
 export const getMedicines = async () => {
-  const res = await axios.get(MEDICINE_API, getAuthConfig(),{
-    params: {page, limit, search, filter}
-  });
+  const res = await axios.get(MEDICINE_API, getAuthConfig());
   return res.data;
 };
 
