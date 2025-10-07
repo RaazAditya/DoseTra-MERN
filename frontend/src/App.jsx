@@ -9,6 +9,7 @@ import ProfilePage from "./pages/authPages/ProfilePage";
 import { useDispatch } from "react-redux";
 import { loadUser } from "./features/authSlice";
 import DashboardPage from "./pages/DashboardPage";
+import MedicinesPage from "./pages/MedicinePage";
 // import MedicineListPage from "./pages/medPages/MedicineListPage";
 // import MedicineFormPage from "./pages/medPages/MedicineFormPage";
 
@@ -27,8 +28,7 @@ const App = () => {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/get" element={<ProfilePage />} />
         <Route path="/dashboard" element={<DashboardPage/>}/>
-        {/* <Route path="/medicines" element={<MedicineListPage/>}/>
-        <Route path="/medicine-form" element={<MedicineFormPage/>}/> */}
+        <Route path="/medicines" element={<MedicinesPage/>}/>
       </Routes>
       <Footer />
     </div>
