@@ -14,7 +14,8 @@ import DoseLogPage from "./pages/DoseLogPage";
 
 
 import DashboardPage from "./pages/DashboardPage";
-import WorkflowSection from "./components/WorkflowSection";
+import MedicinesPage from "./pages/MedicinePage";
+
 // import MedicineListPage from "./pages/medPages/MedicineListPage";
 // import MedicineFormPage from "./pages/medPages/MedicineFormPage";
 
@@ -32,11 +33,15 @@ const App = () => {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/get" element={<ProfilePage />} />
+
         <Route path="/schedules" element={<ScheduleListPage />} />
         <Route path="/schedules/new" element={<ScheduleFormPage />} />
         <Route path="/schedules/edit/:id" element={<ScheduleFormPage />} />
+
+      
         <Route path="/dose-logs" element={<DoseLogPage />} />
         <Route path="/dashboard" element={<DashboardPage/>}/>
+        <Route path="/medicines" element={<MedicinesPage/>}/>
         {/* <Route path="/medicines" element={<MedicineListPage/>}/>
         <Route path="/medicine-form" element={<MedicineFormPage/>}/> */}
       </Routes>
