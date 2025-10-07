@@ -12,6 +12,7 @@ import ScheduleListPage from "./pages/ScheduleListPage";
 import ScheduleFormPage from "./pages/ScheduleFormPage";
 import DoseLogPage from "./pages/medPages/DoseLogPage";
 
+
 import DashboardPage from "./pages/DashboardPage";
 import MedicineListPage from "./pages/medPages/MedicineListPage";
 import MedicineFormPage from "./pages/medPages/MedicineFormPage";
@@ -26,12 +27,16 @@ const App = () => {
     <div className="bg-slate-50 min-h-screen flex flex-col">
       <Navbar />
       <Routes>
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={<LandingPage/>} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/get" element={<ProfilePage />} />
-        <Route path="/schedulelist" element={<ScheduleListPage />} />
-        <Route path="/add-schedule" element={<ScheduleFormPage />} />
+
+        <Route path="/schedules" element={<ScheduleListPage />} />
+        <Route path="/schedules/new" element={<ScheduleFormPage />} />
+        <Route path="/schedules/edit/:id" element={<ScheduleFormPage />} />
+
+      
         <Route path="/dose-logs" element={<DoseLogPage />} />
         <Route path="/dashboard" element={<DashboardPage/>}/>
         <Route path="/medicines" element={<MedicineListPage/>}/>

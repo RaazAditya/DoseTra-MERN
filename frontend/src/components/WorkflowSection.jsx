@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 const workflow = [
   { title: "Add Medicine", icon: "💊", link: "/medicines" },
-  { title: "Add Schedule", icon: "📅", link: "/schedules" },
+  { title: "Add Schedule", icon: "📅", link: "/schedules/new" },
   { title: "Take Dose", icon: "⏱️", link: "/doses/today" },
   { title: "View Dashboard", icon: "📊", link: "/dashboard" },
 ];
