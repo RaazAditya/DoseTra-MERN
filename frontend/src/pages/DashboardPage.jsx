@@ -312,7 +312,6 @@
 
 // export default DashboardPage;
 
-
 import React, { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -330,7 +329,7 @@ import {
   Line,
 } from "recharts";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion"; // for animation
+import {motion} from "framer-motion"; // for animation
 
 // Sample data
 const sampleData = {
