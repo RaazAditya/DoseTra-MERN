@@ -8,6 +8,10 @@ import LoginPage from "./pages/authPages/LoginPage";
 import ProfilePage from "./pages/authPages/ProfilePage";
 import { useDispatch } from "react-redux";
 import { loadUser } from "./features/authSlice";
+import ScheduleListPage from "./pages/ScheduleListPage";
+import ScheduleFormPage from "./pages/ScheduleFormPage";
+import DoseLogPage from "./pages/DoseLogPage";
+
 
 const App = () => {
   const dispatch = useDispatch();
@@ -23,6 +27,9 @@ const App = () => {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/get" element={<ProfilePage />} />
+        <Route path="/schedulelist" element={<ScheduleListPage />} />
+        <Route path="/add-schedule" element={<ScheduleFormPage />} />
+        <Route path="/dose-logs" element={<DoseLogPage />} />
       </Routes>
       <Footer />
     </div>
