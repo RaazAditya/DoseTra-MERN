@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { addMedicineAPI, fetchMedicinesAPI, deleteMedicineAPI } from "./api/medicineApi";
+import { createMedicine, getMedicines, deleteMedicine } from "./api/medicineApi";
 
 const initialState = {
   medicines: [],
@@ -9,19 +9,19 @@ const initialState = {
 
 // Async thunks
 export const fetchMedicines = createAsyncThunk("medicine/fetchAll", async () => {
-  return await fetchMedicinesAPI();
+  return await getMedicines();
 });
 
 export const addMedicine = createAsyncThunk("medicine/add", async (medicineData, thunkAPI) => {
   try {
-    return await addMedicineAPI(medicineData);
+    return await createMedicine(medicineData);
   } catch (err) {
     return thunkAPI.rejectWithValue(err.response?.data?.message || err.message);
   }
 });
 
-export const deleteMedicine = createAsyncThunk("medicine/delete", async (id) => {
-  await deleteMedicineAPI(id);
+export const deleteMedicineById = createAsyncThunk("medicine/delete", async (id) => {
+  await deleteMedicine(id);
   return id;
 });
 
@@ -39,7 +39,7 @@ const medicineSlice = createSlice({
       .addCase(addMedicine.fulfilled, (state, action) => {
         state.medicines.push(action.payload);
       })
-      .addCase(deleteMedicine.fulfilled, (state, action) => {
+      .addCase(deleteMedicineById.fulfilled, (state, action) => {
         state.medicines = state.medicines.filter(med => med._id !== action.payload);
       });
   },
