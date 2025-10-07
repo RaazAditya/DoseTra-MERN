@@ -40,7 +40,7 @@ const Navbar = () => {
   }, []);
 
   return (
-    <nav className="sticky top-0 z-50 flex items-center justify-between py-4 px-8 bg-slate-900 text-white shadow-md">
+    <nav className=" top-0 z-50 flex items-center justify-between py-4 px-8 bg-slate-900 text-white shadow-md">
       <div className="flex items-center space-x-3">
         <img
           src="/logo.jpg"
