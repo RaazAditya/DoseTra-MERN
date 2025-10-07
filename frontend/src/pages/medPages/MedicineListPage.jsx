@@ -26,7 +26,7 @@ const MedicineListPage = () => {
     try {
       setLoading(true);
       const res = await getMedicines();        // <-- uses your API
-      setMedicines(res.data || []);            // backend returns {message, data:[...]}
+      setMedicines(res || []);            // backend returns {message, data:[...]}
     } catch (err) {
       console.error("Failed to fetch medicines:", err);
       alert(err.response?.data?.message || "Failed to fetch medicines");

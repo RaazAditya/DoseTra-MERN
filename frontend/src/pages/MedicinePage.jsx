@@ -38,6 +38,7 @@ const MedicinePage = () => {
 
   useEffect(() => {
     dispatch(fetchMedicines());
+    console.log("hy")
   }, [dispatch]);
 
   const handleSubmit = (e) => {

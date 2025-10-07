@@ -2,13 +2,17 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchMedicines } from "@/features/medicineSlice";
 
 export default function ScheduleFormPage() {
+  const dispatch= useDispatch()
   const navigate = useNavigate();
   const { id } = useParams(); // Will contain schedule ID if editing
+  
 
   // Medicines for dropdown
-  const [medicines, setMedicines] = useState([]);
+  const {medicines} = useSelector((state)=>state.medicine)
 
   // Form state
   const [form, setForm] = useState({
@@ -25,19 +29,16 @@ export default function ScheduleFormPage() {
   const [loading, setLoading] = useState(false);
 
   // Fetch medicines for dropdown from backend
-  useEffect(() => {
-    axios
-      .get("/api/medicines")
-      .then((res) => setMedicines(Array.isArray(res.data) ? res.data : []))
-      .catch((err) => console.error("Failed to fetch medicines:", err));
-  }, []);
+  useEffect(()=>{
+    dispatch(fetchMedicines())
+  },[dispatch])
 
   // Fetch schedule if editing (id exists)
   useEffect(() => {
     if (id) {
       setLoading(true);
       axios
-        .get(`/api/schedules/${id}`)
+        .get(`http://localhost:7000/api/schedules/${id}`)
         .then((res) => {
           const sch = res.data;
           // Populate form with fetched schedule data
@@ -87,11 +88,11 @@ export default function ScheduleFormPage() {
     try {
       if (id) {
         // Edit existing schedule
-        await axios.put(`/api/schedules/${id}`, form);
+        await axios.put(`http://localhost:7000/api/schedules/${id}`, form);
         alert("Schedule updated successfully!");
       } else {
         // Create new schedule
-        await axios.post("/api/schedules", form);
+        await axios.post("http://localhost:7000/api/schedules", form);
         alert("Schedule created successfully!");
       }
       navigate("/schedules"); // Navigate back to list page
@@ -127,7 +128,7 @@ export default function ScheduleFormPage() {
               {Array.isArray(medicines) &&
                 medicines.map((m) => (
                   <option key={m._id} value={m._id}>
-                    {m.name} ({m.type})
+                    {m.name} ({m.form})
                   </option>
                 ))}
             </select>
