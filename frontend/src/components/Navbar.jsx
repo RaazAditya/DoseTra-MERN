@@ -4,6 +4,7 @@ import { Bell } from "lucide-react";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { useSelector, useDispatch } from "react-redux";
 import { loadUser, logout } from "@/features/authSlice";
+import { deleteUserProfile } from "@/features/api/authApi";
 
 const Navbar = () => {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
@@ -28,6 +29,24 @@ const Navbar = () => {
     navigate("/login");
     setDropdownOpen(false);
   };
+
+  const handleDelete = async() => {
+    if (window.confirm("Are you sure you want to delete your account?")){
+   try {
+    await deleteUserProfile();
+    // On success, logout user (clear auth, redux state), and redirect to register
+    dispatch(logout());
+    navigate("/register");
+    setDropdownOpen(false);
+    alert("Account deleted successfully.");
+  } catch (error) {
+    alert(
+      error.response?.data?.message ||
+        "Failed to delete account. Please try again."
+    );
+  }
+  }
+}
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -93,6 +112,12 @@ const Navbar = () => {
                 >
                   Logout
                 </button>
+                <button
+                onClick={handleDelete}
+                className="w-full text-left px-4 py-2 hover:bg-slate-100 transition"
+                >
+                  Delete Account
+                  </button>
               </div>
             )}
           </div>
