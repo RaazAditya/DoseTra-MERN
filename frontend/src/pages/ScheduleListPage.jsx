@@ -19,10 +19,12 @@ export default function ScheduleListPage() {
       const token = localStorage.getItem("token");
       try {
         setLoading(true);
-        const res = await axios.get("http://localhost:7000/api/schedules",
-          {headers : {Authorization: `Bearer ${token}`}}
+        const res = await axios.get("http://localhost:7000/api/schedules", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setSchedules(
+          Array.isArray(res.data) ? res.data : res.data.schedules || []
         );
-        setSchedules(Array.isArray(res.data) ? res.data : res.data.schedules || []);
       } catch (err) {
         console.error(err);
         setSchedules([]);
@@ -35,10 +37,19 @@ export default function ScheduleListPage() {
   }, []);
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this schedule?")) return;
+    if (!window.confirm("Are you sure you want to delete this schedule?"))
+      return;
+    const token = localStorage.getItem("token");
     try {
-      await axios.delete(`http://localhost:7000/api/schedules/${id}`);
-      setSchedules((prev) => prev.filter((s) => s._id !== id));
+      await axios.delete(`http://localhost:7000/api/schedules/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+       // Update frontend immediately
+      setSchedules((prev) =>
+      prev.map((sch) =>
+        sch._id === id ? { ...sch, active: false } : sch
+      )
+    );
     } catch (err) {
       console.error(err);
       alert("Failed to delete schedule.");
@@ -167,35 +178,74 @@ export default function ScheduleListPage() {
               </thead>
               <tbody>
                 {paginatedSchedules.map((sch) => (
-                  <tr key={sch._id} className="border-b hover:bg-indigo-50/60">
-                    <td className="p-3">{sch.medicineId?.name || "-"}</td>
-                    <td className="p-3">{sch.medicineId?.form || "-"}</td>
-                    <td className="p-3">{sch.dosage}</td>
-                    <td className="p-3">{sch.frequency}</td>
-                    <td className="p-3">{sch.times?.join(", ")}</td>
-                    <td className="p-3">
-                      {sch.startDate ? new Date(sch.startDate).toLocaleDateString() : "-"}
+                  <tr
+                    key={sch._id}
+                    className={`border-b transition-all ${
+                      sch.active
+                        ? "hover:bg-indigo-50/60"
+                        : "bg-gray-50/70 opacity-70" // lighter & semi-transparent
+                    }`}
+                  >
+                    <td className={`p-3 ${!sch.active ? "line-through" : ""}`}>
+                      {sch.medicineId?.name || "-"}
                     </td>
-                    <td className="p-3">
-                      {sch.endDate ? new Date(sch.endDate).toLocaleDateString() : "-"}
+                    <td className={`p-3 ${!sch.active ? "line-through" : ""}`}>
+                      {sch.medicineId?.form || "-"}
                     </td>
-                    <td className="p-3">{sch.active ? "Active" : "Inactive"}</td>
+                    <td className={`p-3 ${!sch.active ? "line-through" : ""}`}>
+                      {sch.dosage}
+                    </td>
+                    <td className={`p-3 ${!sch.active ? "line-through" : ""}`}>
+                      {sch.frequency}
+                    </td>
+                    <td className={`p-3 ${!sch.active ? "line-through" : ""}`}>
+                      {sch.times?.join(", ")}
+                    </td>
+                    <td className={`p-3 ${!sch.active ? "line-through" : ""}`}>
+                      {sch.startDate
+                        ? new Date(sch.startDate).toLocaleDateString()
+                        : "-"}
+                    </td>
+                    <td className={`p-3 ${!sch.active ? "line-through" : ""}`}>
+                      {sch.endDate
+                        ? new Date(sch.endDate).toLocaleDateString()
+                        : "-"}
+                    </td>
+                    <td
+                      className={`p-3 font-semibold ${
+                        sch.active ? "text-green-600" : "text-red-400"
+                      }`}
+                    >
+                      {sch.active ? "Active" : "Inactive"}
+                    </td>
                     <td className="p-3 flex gap-2">
                       <Button
                         size="sm"
                         variant="outline"
-                        className="hover:bg-indigo-50 hover:text-indigo-700 focus:ring-2 focus:ring-indigo-400"
-                        onClick={() => navigate(`/schedules/edit/${sch._id}`)}
+                        className={`focus:ring-2 focus:ring-indigo-400 ${
+                          !sch.active
+                            ? "text-gray-400 border-gray-200 cursor-not-allowed hover:bg-none"
+                            : "hover:bg-indigo-50 hover:text-indigo-700"
+                        }`}
+                        onClick={() =>
+                          sch.active && navigate(`/schedules/edit/${sch._id}`)
+                        }
                         title="Edit"
+                        disabled={!sch.active}
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
-                        className="border-red-400 text-red-500 hover:bg-red-50 hover:text-red-600 focus:ring-2 focus:ring-red-300"
-                        onClick={() => handleDelete(sch._id)}
+                        className={`focus:ring-2 focus:ring-red-300 ${
+                          !sch.active
+                            ? "text-gray-400 border-gray-200 cursor-not-allowed hover:bg-none"
+                            : "border-red-400 text-red-500 hover:bg-red-50 hover:text-red-600"
+                        }`}
+                        onClick={() => sch.active && handleDelete(sch._id)}
                         title="Delete"
+                        disabled={!sch.active}
                       >
                         <Trash className="w-4 h-4" />
                       </Button>

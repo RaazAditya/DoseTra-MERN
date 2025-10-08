@@ -27,7 +27,7 @@ export const getSchedules = async (req, res) => {
 
 // Get One Schedule
 export const getSchedule = async (req, res) => {
-  const schedule = await Schedule.findOne({ scheduleId: req.params.id });
+  const schedule = await Schedule.findOne({ _id: req.params.id });
   if (!schedule) return res.status(404).json({ error: "Not Found" });
   res.json(schedule);
 };
@@ -35,7 +35,7 @@ export const getSchedule = async (req, res) => {
 // Update Schedule
 export const updateSchedule = async (req, res) => {
   const schedule = await Schedule.findOneAndUpdate(
-    { scheduleId: req.params.id },
+    { _id: req.params.id },
     req.body,
     { new: true }
   );
@@ -44,8 +44,10 @@ export const updateSchedule = async (req, res) => {
 
 // Delete/Deactivate Schedule
 export const deleteSchedule = async (req, res) => {
+  console.log("i am in deleteSchedule")
+  console.log("trhis ",req.params.id)
   await Schedule.findOneAndUpdate(
-    { scheduleId: req.params.id },
+    { _id: req.params.id },
     { active: false }
   );
   res.json({ message: "Schedule deactivated" });
