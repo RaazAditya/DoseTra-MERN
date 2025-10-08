@@ -1,6 +1,7 @@
 import express from "express";
+import authMiddleware from "../middleware/authMiddlewares.js";
 import {
-  createSchedule,
+  addSchedule,
   getSchedules,
   getSchedule,
   updateSchedule,
@@ -9,7 +10,9 @@ import {
 
 const router = express.Router();
 
-router.post("/", createSchedule);
+router.use(authMiddleware)
+
+router.post("/", addSchedule);
 router.get("/", getSchedules);
 router.get("/:id", getSchedule);
 router.put("/:id", updateSchedule);

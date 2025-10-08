@@ -15,9 +15,13 @@ export default function ScheduleListPage() {
 
   useEffect(() => {
     const fetchSchedules = async () => {
+      // get token from localStorage (or wherever you store it)
+      const token = localStorage.getItem("token");
       try {
         setLoading(true);
-        const res = await axios.get("http://localhost:7000/api/schedules");
+        const res = await axios.get("http://localhost:7000/api/schedules",
+          {headers : {Authorization: `Bearer ${token}`}}
+        );
         setSchedules(Array.isArray(res.data) ? res.data : res.data.schedules || []);
       } catch (err) {
         console.error(err);

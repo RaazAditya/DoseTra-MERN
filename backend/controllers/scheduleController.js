@@ -1,19 +1,24 @@
 import Schedule from "../models/Schedule.js";
+import { createSchedule } from "../services/scheduleService.js";
 
-// Create Schedule
-export const createSchedule = async (req, res) => {
+//add schedule
+export const addSchedule = async (req, res) => {
   try {
-    const schedule = await Schedule.create(req.body);
-    res.status(201).json(schedule);
+    const userId = req.user.id; // from auth middleware
+    const schedule = await createSchedule(req.body, userId);
+
+    res.status(201).json({ message: "Schedule created", data: schedule });
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.error("Error creating schedule:", err);
+    res.status(500).json({ error: err.message });
   }
 };
 
 // Get All Schedules
 export const getSchedules = async (req, res) => {
   try {
-    const schedules = await Schedule.find().populate("medicineId"); // populate name & type
+    const schedules = await Schedule.find({ userId: req.user._id })
+      .populate("medicineId", "name form");
     res.json(schedules);
   } catch (err) {
     res.status(500).json({ message: err.message });
