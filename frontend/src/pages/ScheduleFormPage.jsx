@@ -6,13 +6,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchMedicines } from "@/features/medicineSlice";
 
 export default function ScheduleFormPage() {
-  const dispatch= useDispatch()
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const { id } = useParams(); // Will contain schedule ID if editing
-  
 
   // Medicines for dropdown
-  const {medicines} = useSelector((state)=>state.medicine)
+  const { medicines } = useSelector((state) => state.medicine);
 
   // Form state
   const [form, setForm] = useState({
@@ -29,9 +28,9 @@ export default function ScheduleFormPage() {
   const [loading, setLoading] = useState(false);
 
   // Fetch medicines for dropdown from backend
-  useEffect(()=>{
-    dispatch(fetchMedicines())
-  },[dispatch])
+  useEffect(() => {
+    dispatch(fetchMedicines());
+  }, [dispatch]);
 
   // Fetch schedule if editing (id exists)
   useEffect(() => {
@@ -85,16 +84,25 @@ export default function ScheduleFormPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
+    // get token from localStorage (or wherever you store it)
+    const token = localStorage.getItem("token");
+
     try {
       if (id) {
         // Edit existing schedule
-        await axios.put(`http://localhost:7000/api/schedules/${id}`, form);
+        await axios.put(`http://localhost:7000/api/schedules/${id}`, form, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         alert("Schedule updated successfully!");
       } else {
         // Create new schedule
-        await axios.post("http://localhost:7000/api/schedules", form);
+        await axios.post("http://localhost:7000/api/schedules", form, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         alert("Schedule created successfully!");
       }
+
       navigate("/schedules"); // Navigate back to list page
     } catch (err) {
       console.error(err.response?.data || err.message);
