@@ -34,15 +34,17 @@ export default function ScheduleFormPage() {
 
   // Fetch schedule if editing (id exists)
   useEffect(() => {
+    const token = localStorage.getItem("token");
     if (id) {
       setLoading(true);
       axios
-        .get(`http://localhost:7000/api/schedules/${id}`)
+        .get(`http://localhost:7000/api/schedules/${id}`,
+          { headers: {Authorization : `Bearer ${token}`}}
+        )
         .then((res) => {
           const sch = res.data;
           // Populate form with fetched schedule data
           setForm({
-            scheduleId: sch.scheduleId || uuidv4(),
             medicineId: sch.medicineId?._id || "",
             dosage: sch.dosage || "",
             frequency: sch.frequency || "",
