@@ -23,6 +23,7 @@ export const createNotificationsForDoses = async (doses, userId) => {
     status: "pending",
     seen: false,
     sentAt: null,
+    scheduledAt: dose.scheduledAt
   }));
   console.log("notifications")
   console.log(notifications)
@@ -45,7 +46,7 @@ export const startNotificationJob = () => {
         const notifications = await Notification.find({
           userId,
           status: "pending",
-          createdAt: { $lte: now },
+          scheduledAt: { $lte: now },
         }).populate({
           path: "doseId",
           model: "Dose",
