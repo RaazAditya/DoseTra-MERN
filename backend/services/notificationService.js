@@ -10,19 +10,22 @@ import cron from "node-cron";
  */
 export const createNotificationsForDoses = async (doses, userId) => {
   if (!doses || doses.length === 0) return [];
-
+  console.log("doses")
+  console.log(doses)
   const notifications = doses.map((dose) => ({
     userId,
-    doseId: dose._id, // reference to the specific dose
-    type: "browser", // can be "browser" or "email"
-    title: `Medication Reminder!!!`,
+    doseId: dose._id, // ✅ reference the correct dose
+    type: "browser",
+    title: "Medication Reminder!!!",
     message: `Time to take ${dose.dosage || ""} of ${
       dose.medicineName || "your medicine"
     } at ${dose.scheduledAt.toLocaleTimeString()}`,
     status: "pending",
-    relatedModel: "Schedule", // optional, can be used in UI for linking
-    relatedId: dose._id,
+    seen: false,
+    sentAt: null,
   }));
+  console.log("notifications")
+  console.log(notifications)
 
   return await Notification.insertMany(notifications);
 };
@@ -56,7 +59,6 @@ export const startNotificationJob = () => {
             },
           },
         });
-
         if (!notifications.length) continue;
 
         for (const notif of notifications) {
@@ -85,7 +87,6 @@ export const startNotificationJob = () => {
                 }
               : null,
           });
-
           // Update status to "sent"
           notif.status = "sent";
           notif.sentAt = new Date();
