@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button } from "../../components/ui/button";
+import { Button } from "../components/ui/button";
 import { Check, X } from "lucide-react";
 // import axios from "axios"; // Uncomment for backend
 
