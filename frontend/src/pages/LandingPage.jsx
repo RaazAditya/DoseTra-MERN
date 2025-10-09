@@ -6,8 +6,15 @@ import WorkflowSection from "@/components/WorkflowSection";
 import CTASection from "@/components/CTASection";
 import Footer from "@/components/Footer";
 
-const LandingPage = () => {
-  return (
+
+import { useSelector } from "react-redux";
+import LoggedInLanding from "@/components/LoggedInLanding";
+
+
+export default function LandingPage() {
+  const { user } = useSelector((state) => state.auth);
+
+  return user ? <LoggedInLanding /> : (
     <div>
       <HeroSection />
       <FeaturesSection />
@@ -15,6 +22,4 @@ const LandingPage = () => {
       <CTASection />
     </div>
   );
-};
-
-export default LandingPage;
+}
