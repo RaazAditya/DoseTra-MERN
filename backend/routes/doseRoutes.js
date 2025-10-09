@@ -1,16 +1,11 @@
 import express from "express";
-import {
-  markTaken,
-  markMissed,
-  rescheduleDose,
-  getDoseLogs,
-} from "../controllers/doseController.js";
+import { getAllDoses } from "../services/doseService.js"; 
+import authMiddleware from "../middleware/authMiddlewares.js";
 
 const router = express.Router();
 
-router.post("/:id/take", markTaken);
-router.post("/:id/miss", markMissed);
-router.put("/:id/reschedule", rescheduleDose);
-router.get("/logs", getDoseLogs);
+router.use(authMiddleware);
+// GET all doses for logged-in user (or for demo, fetch all)
+router.get("/", getAllDoses);
 
 export default router;

@@ -31,3 +31,27 @@ export const createDosesForSchedule = async (schedule, userId) => {
 
   return await Dose.insertMany(doses);
 };
+
+export const getAllDoses = async (req, res) => {
+  try {
+    const userId = req.user._id; // or however you're storing it (JWT, session, etc.)
+
+    const doses = await Dose.find({ userId })
+      .populate({
+        path: "scheduleId",
+        populate: {
+          path: "medicineId",
+          select: "name form dosage", // only fetch needed fields
+        },
+      })
+      .sort({ scheduledAt: 1 });
+
+    res.status(200).json({
+      success: true,
+      doses,
+    });
+  } catch (error) {
+    console.error("Error fetching doses:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
