@@ -171,10 +171,10 @@ dotenv.config();
 //controller functions for in-app notifications
 
 
-// ✅ GET /api/notifications
+//  GET /api/notifications
 export const getNotifications = async (req, res) => {
   try {
-    // 1️⃣ Find only "sent" notifications for this user
+    // 1️ Find only "sent" notifications for this user
     const notifications = await Notification.find({
       userId: req.user._id,
       status: "sent", // only sent ones
@@ -193,9 +193,9 @@ export const getNotifications = async (req, res) => {
           },
         },
       })
-      .select("type title message seen sentAt createdAt updatedAt status doseId"); // ✅ ensure createdAt is included
+      .select("type title message seen sentAt createdAt updatedAt status doseId"); //  ensure createdAt is included
 
-    // 2️⃣ Transform for frontend with enhanced info
+    // Transform for frontend with enhanced info
     const notificationsWithDoseInfo = notifications.map((notif) => {
       const dose = notif.doseId;
       const schedule = dose?.scheduleId;
@@ -208,9 +208,9 @@ export const getNotifications = async (req, res) => {
         message: notif.message,
         seen: notif.seen,
         sentAt: notif.sentAt,
-        createdAt: notif.createdAt, // ✅ explicit inclusion
+        createdAt: notif.createdAt, //  explicit inclusion
         updatedAt: notif.updatedAt,
-        status: notif.status || "sent", // ✅ attach status explicitly
+        status: notif.status || "sent", //  attach status explicitly
 
         doseInfo: dose
           ? {
@@ -231,7 +231,7 @@ export const getNotifications = async (req, res) => {
 
     res.json(notificationsWithDoseInfo);
   } catch (err) {
-    console.error("❌ Failed to fetch notifications:", err);
+    console.error(" Failed to fetch notifications:", err);
     res.status(500).json({ message: "Failed to fetch notifications" });
   }
 };
