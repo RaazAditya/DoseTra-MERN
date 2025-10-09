@@ -5,6 +5,8 @@ import medicineRoutes from "./routes/medicineRoutes.js"
 import scheduleRoutes from "./routes/scheduleRoutes.js"
 import doseRoutes from "./routes/doseRoutes.js"
 import notificationRoutes from "./routes/notificationsRoutes.js"
+import adherenceRoutes from "./routes/adherenceRoutes.js"
+import userSettingsRoutes from "./routes/userSettings.js"
 
 const app = express();
 
@@ -22,5 +24,7 @@ app.use("/api/v1/medicine", medicineRoutes)
 app.use("/api/schedules", scheduleRoutes);
 app.use("/api/doses", doseRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/adherence", adherenceRoutes);
+app.use("/api/settings", userSettingsRoutes);
 
 export {app}
