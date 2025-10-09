@@ -10,8 +10,8 @@ const workflow = [
 
 const WorkflowSection = () => {
   return (
-    <section className="mt-32 px-8 md:px-20 text-center">
-      <h2 className="text-4xl font-bold text-slate-900 mb-10">How DoseTra Works</h2>
+    <section className="mt-15 px-8 md:px-20 text-center">
+      <h2 className="text-4xl font-bold text-slate-900 mb-10">Start Right Now !!</h2>
       
       {/* Responsive grid: 1 col on mobile, 2 cols on md, 4 cols on lg */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">

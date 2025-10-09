@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 
 const DoseSchema = new mongoose.Schema({
-  doseId: { type: String, unique: true },
   userId: { type: mongoose.Schema.Types.String, ref: "User" },
   scheduleId: { type: mongoose.Schema.Types.String, ref: "Schedule" },
   scheduledAt: Date,

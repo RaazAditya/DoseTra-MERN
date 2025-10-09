@@ -19,6 +19,7 @@ import DashboardPage from "./pages/DashboardPage";
 import MedicineListPage from "./pages/medPages/MedicineListPage";
 import MedicineFormPage from "./pages/medPages/MedicineFormPage";
 import EditMedicinePage from "./pages/medPages/EditMedicinePage";
+import NotificationsPage from "./pages/NotificationsPage";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -45,6 +46,8 @@ const App = () => {
         <Route path="/medicines" element={<MedicineListPage/>}/>
         <Route path="/medicine-form" element={<MedicineFormPage/>}/>
         <Route path="/medicine-form/:id" element={<EditMedicinePage/>}/>
+
+        <Route path="/notifications" element={<NotificationsPage/>}/>
       </Routes>
       <Footer />
     </div>

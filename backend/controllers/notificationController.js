@@ -5,159 +5,277 @@ import Dose from "../models/Dose.js";
 import Subscription from "../models/Subscription.js";
 import Notification from "../models/Notification.js";
 import dotenv from "dotenv";
+import { getIO, getConnectedUsers } from "../sockets/socket.js";
 dotenv.config();
 
 
 
-//  Email Setup (Nodemailer)
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+// //  Email Setup (Nodemailer)
+// const transporter = nodemailer.createTransport({
+//   service: "gmail",
+//   auth: {
+//     user: process.env.EMAIL_USER,
+//     pass: process.env.EMAIL_PASS,
+//   },
+// });
 
 
-//  Web Push Setup
+// //  Web Push Setup
 
-const vapidKeys = {
-  publicKey: process.env.VAPID_PUBLIC,
-  privateKey: process.env.VAPID_PRIVATE,
-};
+// const vapidKeys = {
+//   publicKey: process.env.VAPID_PUBLIC,
+//   privateKey: process.env.VAPID_PRIVATE,
+// };
 
-console.log("Loaded VAPID keys:", vapidKeys); 
+// console.log("Loaded VAPID keys:", vapidKeys); 
 
-webpush.setVapidDetails(
-  "mailto:yourgmail@gmail.com", // your contact email
-  vapidKeys.publicKey,
-  vapidKeys.privateKey
-);
-
-
-// Subscribe to Browser Notifications
-
-export const subscribeNotification = async (req, res) => {
-  try {
-    const userId = req.user._id; // requires auth middleware
-    const subscription = req.body;
-
-    const existing = await Subscription.findOne({ endpoint: subscription.endpoint });
-    if (existing) return res.json({ message: "Already subscribed" });
-
-    await Subscription.create({ userId, ...subscription });
-    res.json({ message: "Subscribed for browser notifications" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
+// webpush.setVapidDetails(
+//   "mailto:yourgmail@gmail.com", // your contact email
+//   vapidKeys.publicKey,
+//   vapidKeys.privateKey
+// );
 
 
-//  Send Test Notification
+// // Subscribe to Browser Notifications
 
-export const sendTestNotification = async (req, res) => {
-  try {
-    const { email } = req.body;
-    const userId = req.user?._id;
+// export const subscribeNotification = async (req, res) => {
+//   try {
+//     const userId = req.user._id; // requires auth middleware
+//     const subscription = req.body;
 
-    // Email Test
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email || process.env.EMAIL_USER,
-      subject: "Dosetra Test Notification",
-      text: "This is a test notification from Dosetra.",
-    });
+//     const existing = await Subscription.findOne({ endpoint: subscription.endpoint });
+//     if (existing) return res.json({ message: "Already subscribed" });
 
-    // Browser Test
-    const subs = await Subscription.find({ userId });
-    for (const sub of subs) {
-      await webpush.sendNotification(
-        sub,
-        JSON.stringify({
-          title: "Dosetra",
-          body: "This is a test browser notification!",
-        })
-      );
-      await Notification.create({
-        userId,
-        type: "browser",
-        title: "Dosetra",
-        message: "This is a test browser notification!",
-      });
-    }
+//     await Subscription.create({ userId, ...subscription });
+//     res.json({ message: "Subscribed for browser notifications" });
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// };
 
-    res.json({ message: "Test notification sent" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
+
+// //  Send Test Notification
+
+// export const sendTestNotification = async (req, res) => {
+//   try {
+//     const { email } = req.body;
+//     const userId = req.user?._id;
+
+//     // Email Test
+//     await transporter.sendMail({
+//       from: process.env.EMAIL_USER,
+//       to: email || process.env.EMAIL_USER,
+//       subject: "Dosetra Test Notification",
+//       text: "This is a test notification from Dosetra.",
+//     });
+
+//     // Browser Test
+//     const subs = await Subscription.find({ userId });
+//     for (const sub of subs) {
+//       await webpush.sendNotification(
+//         sub,
+//         JSON.stringify({
+//           title: "Dosetra",
+//           body: "This is a test browser notification!",
+//         })
+//       );
+//       await Notification.create({
+//         userId,
+//         type: "browser",
+//         title: "Dosetra",
+//         message: "This is a test browser notification!",
+//       });
+//     }
+
+//     res.json({ message: "Test notification sent" });
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// };
 
 
 // Cron Job - Reminders
 
-cron.schedule("* * * * *", async () => {
-  console.log("Running cron job for medicine reminders...");
+// cron.schedule("* * * * *", async () => {
+//   console.log("Running cron job for medicine reminders...");
 
-  const now = new Date();
-  const doses = await Dose.find({
-    status: "pending",
-    scheduledAt: { $lte: new Date(now.getTime() + 60000) },
-  }).populate("userId");
+//   const now = new Date();
+//   const doses = await Dose.find({
+//     status: "pending",
+//     scheduledAt: { $lte: new Date(now.getTime() + 60000) },
+//   }).populate("userId");
 
-  for (const dose of doses) {
-    const user = dose.userId;
-    if (!user) continue;
+//   for (const dose of doses) {
+//     const user = dose.userId;
+//     if (!user) continue;
 
-    const message = `Hi ${user.name}, it's time to take your medicine (${dose.medicineName}).`;
+//     const message = `Hi ${user.name}, it's time to take your medicine (${dose.medicineName}).`;
 
-    // Email Notification
-    if (["email", "both"].includes(user.settings.notificationPreference)) {
-      try {
-        await transporter.sendMail({
-          from: process.env.EMAIL_USER,
-          to: user.email,
-          subject: "Medicine Reminder - Dosetra",
-          text: message,
-        });
-        await Notification.create({
-          userId: user._id,
-          type: "email",
-          title: "Medicine Reminder",
-          message,
-        });
-      } catch (err) {
-        await Notification.create({
-          userId: user._id,
-          type: "email",
-          title: "Medicine Reminder",
-          message,
-          status: "failed",
-        });
-      }
-    }
+//     // Email Notification
+//     if (["email", "both"].includes(user.settings.notificationPreference)) {
+//       try {
+//         await transporter.sendMail({
+//           from: process.env.EMAIL_USER,
+//           to: user.email,
+//           subject: "Medicine Reminder - Dosetra",
+//           text: message,
+//         });
+//         await Notification.create({
+//           userId: user._id,
+//           type: "email",
+//           title: "Medicine Reminder",
+//           message,
+//         });
+//       } catch (err) {
+//         await Notification.create({
+//           userId: user._id,
+//           type: "email",
+//           title: "Medicine Reminder",
+//           message,
+//           status: "failed",
+//         });
+//       }
+//     }
 
-    // Browser Notification 
-    if (["browser", "both"].includes(user.settings.notificationPreference)) {
-      const subs = await Subscription.find({ userId: user._id });
-      for (const sub of subs) {
-        try {
-          await webpush.sendNotification(
-            sub,
-            JSON.stringify({
-              title: "Medicine Reminder",
-              body: message,
-            })
-          );
-          await Notification.create({
-            userId: user._id,
-            type: "browser",
-            title: "Medicine Reminder",
-            message,
-          });
-        } catch (err) {
-          console.error(" Push send failed:", err.message);
-        }
-      }
-    }
+//     // Browser Notification 
+//     if (["browser", "both"].includes(user.settings.notificationPreference)) {
+//       const subs = await Subscription.find({ userId: user._id });
+//       for (const sub of subs) {
+//         try {
+//           await webpush.sendNotification(
+//             sub,
+//             JSON.stringify({
+//               title: "Medicine Reminder",
+//               body: message,
+//             })
+//           );
+//           await Notification.create({
+//             userId: user._id,
+//             type: "browser",
+//             title: "Medicine Reminder",
+//             message,
+//           });
+//         } catch (err) {
+//           console.error(" Push send failed:", err.message);
+//         }
+//       }
+//     }
+//   }
+// });
+
+
+
+
+
+
+//controller functions for in-app notifications
+
+
+// ✅ GET /api/notifications
+export const getNotifications = async (req, res) => {
+  try {
+    // 1️⃣ Find only "sent" notifications for this user
+    const notifications = await Notification.find({
+      userId: req.user._id,
+      status: "sent", // only sent ones
+    })
+      .sort({ createdAt: -1 })
+      .populate({
+        path: "doseId",
+        model: "Dose",
+        populate: {
+          path: "scheduleId",
+          model: "Schedule",
+          populate: {
+            path: "medicineId",
+            model: "Medicine",
+            select: "name dosage form frequency instructions",
+          },
+        },
+      })
+      .select("type title message seen sentAt createdAt updatedAt status doseId"); // ✅ ensure createdAt is included
+
+    // 2️⃣ Transform for frontend with enhanced info
+    const notificationsWithDoseInfo = notifications.map((notif) => {
+      const dose = notif.doseId;
+      const schedule = dose?.scheduleId;
+      const medicine = schedule?.medicineId;
+
+      return {
+        _id: notif._id,
+        type: notif.type,
+        title: notif.title,
+        message: notif.message,
+        seen: notif.seen,
+        sentAt: notif.sentAt,
+        createdAt: notif.createdAt, // ✅ explicit inclusion
+        updatedAt: notif.updatedAt,
+        status: notif.status || "sent", // ✅ attach status explicitly
+
+        doseInfo: dose
+          ? {
+              scheduledAt: dose.scheduledAt,
+              status: dose.status,
+              // Schedule info
+              scheduleDosage: schedule?.dosage,
+              scheduleFrequency: schedule?.frequency,
+              // Medicine info
+              medicineName: medicine?.name,
+              medicineDosage: medicine?.dosage,
+              form: medicine?.form,
+              instructions: medicine?.instructions,
+            }
+          : null,
+      };
+    });
+
+    res.json(notificationsWithDoseInfo);
+  } catch (err) {
+    console.error("❌ Failed to fetch notifications:", err);
+    res.status(500).json({ message: "Failed to fetch notifications" });
   }
-});
+};
+
+
+
+// PATCH /api/notifications/mark-seen
+export const markNotificationsSeen = async (req, res) => {
+  try {
+    await Notification.updateMany(
+      { userId: req.user._id, seen: false },
+      { $set: { seen: true } }
+    );
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to mark notifications seen" });
+  }
+};
+
+// POST /api/notifications
+export const createNotification = async (req, res) => {
+  try {
+    const { userId, type, title, message, subscription } = req.body;
+
+    const notification = await Notification.create({
+      userId,
+      type,
+      title,
+      message,
+      subscription: subscription || null,
+      status: "sent",
+    });
+
+    // Emit notification via socket if user is online
+    const connectedUsers = getConnectedUsers();
+    const io = getIO();
+    const socketId = connectedUsers.get(userId.toString());
+    if (socketId && io) {
+      io.to(socketId).emit("notification", notification);
+    }
+
+    res.status(201).json(notification);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to create notification", error: err.message });
+  }
+};
+
