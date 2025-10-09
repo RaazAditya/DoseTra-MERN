@@ -58,7 +58,7 @@ export const updateSchedule = async (req, res) => {
 // Delete/Deactivate Schedule
 export const deleteSchedule = async (req, res) => {
   console.log("i am in deleteSchedule")
-  console.log("trhis ",req.params.id)
+  console.log("this ",req.params.id)
   await Schedule.findOneAndUpdate(
     { _id: req.params.id },
     { active: false }

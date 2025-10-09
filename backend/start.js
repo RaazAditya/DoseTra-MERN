@@ -13,10 +13,10 @@ export default async function startServer() {
     startNotificationJob(); // start cron job
 
     server.listen(process.env.PORT || 3000, () => {
-      console.log(`✅ Server running on port ${process.env.PORT || 3000}`);
+      console.log(`Server running on port ${process.env.PORT || 3000}`);
     });
   } catch (err) {
-    console.error("❌ Server start failed:", err);
+    console.error("Server start failed:", err);
     process.exit(1);
   }
 }

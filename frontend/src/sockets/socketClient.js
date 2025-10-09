@@ -1,5 +1,3 @@
-
-
 import { io } from "socket.io-client";
 
 let socket;
@@ -14,17 +12,17 @@ export const initSocket = (userId, token, onNotification) => {
   });
 
   socket.on("connect", () => {
-    console.log("🔗 Socket connected:", socket.id);
+    console.log("Socket connected:", socket.id);
     socket.emit("register", { userId });
   });
 
   socket.on("notification", (notification) => {
-    console.log("📨 New notification:", notification);
+    console.log(" New notification:", notification);
     onNotification(notification);
   });
 
   socket.on("disconnect", () => {
-    console.log("❌ Socket disconnected");
+    console.log("Socket disconnected");
   });
 
   return socket;

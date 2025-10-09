@@ -329,7 +329,7 @@ import {
   Line,
 } from "recharts";
 import { useNavigate } from "react-router-dom";
-import {motion} from "framer-motion"; // for animation
+//import {motion} from "framer-motion"; // for animation
 
 // Sample data
 const sampleData = {
@@ -367,6 +367,12 @@ const sampleData = {
   ],
 };
 
+const getAdherenceColor = (value) => {
+  if (value >= 80) return "bg-green-500";
+  if (value >= 50) return "bg-yellow-400";
+  return "bg-red-500";
+};
+
 const DashboardPage = () => {
   const [summary, setSummary] = useState({});
   const navigate = useNavigate();
@@ -375,23 +381,23 @@ const DashboardPage = () => {
     setTimeout(() => setSummary(sampleData), 500);
   }, []);
 
-  const today = new Date().toISOString().split("T")[0];
+  // const today = new Date().toISOString().split("T")[0];
 
-  const getAdherenceColor = (value) => {
-    if (value >= 80) return "bg-green-500";
-    if (value >= 50) return "bg-yellow-400";
-    return "bg-red-500";
-  };
+  // const getAdherenceColor = (value) => {
+  //   if (value >= 80) return "bg-green-500";
+  //   if (value >= 50) return "bg-yellow-400";
+  //   return "bg-red-500";
+  // };
 
-  const formatTimeRemaining = (scheduledAt) => {
-    const now = new Date();
-    const target = new Date(scheduledAt);
-    const diff = target - now;
-    if (diff <= 0) return "Now";
-    const hrs = Math.floor(diff / 1000 / 60 / 60);
-    const mins = Math.floor((diff / 1000 / 60) % 60);
-    return `${hrs}h ${mins}m`;
-  };
+  // const formatTimeRemaining = (scheduledAt) => {
+  //   const now = new Date();
+  //   const target = new Date(scheduledAt);
+  //   const diff = target - now;
+  //   if (diff <= 0) return "Now";
+  //   const hrs = Math.floor(diff / 1000 / 60 / 60);
+  //   const mins = Math.floor((diff / 1000 / 60) % 60);
+  //   return `${hrs}h ${mins}m`;
+  // };
 
   // Prepare data for weekly adherence line chart
   const adherenceData = summary.trends?.map((d) => ({
