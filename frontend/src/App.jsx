@@ -12,7 +12,7 @@ import { loadUser } from "./features/authSlice";
 
 import ScheduleListPage from "./pages/ScheduleListPage";
 import ScheduleFormPage from "./pages/ScheduleFormPage";
-import DoseLogPage from "./pages/medPages/DoseLogPage";
+import DoseLogPage from "./pages/DoseLogPage";
 
 
 import DashboardPage from "./pages/DashboardPage";
