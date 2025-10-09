@@ -679,7 +679,7 @@ const DashboardPage = () => {
       >
         <Button
           className="bg-slate-900 text-white hover:bg-slate-700 transition px-6 py-3 rounded-full shadow-lg text-lg md:text-xl flex items-center gap-2"
-          onClick={() => navigate("/doselog")}
+          onClick={() => navigate("/dose-logs")}
         >
           <BarChart2 className="w-5 h-5" /> View Dose Logs
         </Button>
