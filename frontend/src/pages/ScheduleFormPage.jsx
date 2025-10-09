@@ -38,13 +38,14 @@ export default function ScheduleFormPage() {
     if (id) {
       setLoading(true);
       axios
-        .get(`http://localhost:7000/api/schedules/${id}`,
-          { headers: {Authorization : `Bearer ${token}`}}
-        )
+        .get(`http://localhost:7000/api/schedules/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
         .then((res) => {
           const sch = res.data;
           
-          // Populate form with fetched schedule data
+
+          // When editing
           setForm({
             medicineId: sch.medicineId?._id || "",
             dosage: sch.dosage || "",
@@ -54,7 +55,6 @@ export default function ScheduleFormPage() {
             times: sch.times && sch.times.length > 0 ? sch.times : [""],
             active: sch.active ?? true,
           });
-          
         })
         .catch((err) => console.error("Failed to fetch schedule:", err))
         .finally(() => setLoading(false));

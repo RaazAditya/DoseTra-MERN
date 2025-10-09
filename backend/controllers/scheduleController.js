@@ -25,12 +25,25 @@ export const getSchedules = async (req, res) => {
   }
 };
 
-// Get One Schedule
+// Get One Schedule with populated medicine info
 export const getSchedule = async (req, res) => {
-  const schedule = await Schedule.findOne({ _id: req.params.id });
-  if (!schedule) return res.status(404).json({ error: "Not Found" });
-  res.json(schedule);
+  try {
+    const schedule = await Schedule.findOne({ _id: req.params.id })
+      .populate({
+        path: "medicineId",           // populate the medicineId
+        model: "Medicine",            // specify the model
+        select: "name dosage form"    // select the fields you need
+      });
+
+    if (!schedule) return res.status(404).json({ error: "Not Found" });
+
+    res.json(schedule);
+  } catch (err) {
+    console.error("❌ Failed to fetch schedule:", err);
+    res.status(500).json({ message: "Failed to fetch schedule" });
+  }
 };
+
 
 // Update Schedule
 export const updateSchedule = async (req, res) => {

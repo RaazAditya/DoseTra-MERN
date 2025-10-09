@@ -4,7 +4,7 @@ const notificationSchema = new mongoose.Schema(
   {
     doseId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Schedule", // link to dose/schedule
+      ref: "Dose", // link to dose/schedule
       required: true,
     },
     userId: {
