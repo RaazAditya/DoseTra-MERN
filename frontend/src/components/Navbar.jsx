@@ -85,7 +85,8 @@ useEffect(() => {
       return;
 
     try {
-      await deleteUserProfile();
+      const token = localStorage.getItem("token")
+      await deleteUserProfile(token);
       handleLogout();
       alert("Account deleted successfully.");
     } catch (error) {
