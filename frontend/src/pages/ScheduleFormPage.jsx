@@ -43,6 +43,7 @@ export default function ScheduleFormPage() {
         )
         .then((res) => {
           const sch = res.data;
+          
           // Populate form with fetched schedule data
           setForm({
             medicineId: sch.medicineId?._id || "",
@@ -53,6 +54,7 @@ export default function ScheduleFormPage() {
             times: sch.times && sch.times.length > 0 ? sch.times : [""],
             active: sch.active ?? true,
           });
+          
         })
         .catch((err) => console.error("Failed to fetch schedule:", err))
         .finally(() => setLoading(false));
@@ -99,6 +101,7 @@ export default function ScheduleFormPage() {
         alert("Schedule updated successfully!");
       } else {
         // Create new schedule
+
         await axios.post("http://localhost:7000/api/schedules", form, {
           headers: { Authorization: `Bearer ${token}` },
         });
