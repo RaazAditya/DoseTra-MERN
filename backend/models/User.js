@@ -32,6 +32,15 @@ const userSchema = new mongoose.Schema({
         default: "en" 
     }
   },
+  // ✅ Add push subscription for browser notifications
+  pushSubscription: {
+    endpoint: { type: String },
+    keys: {
+      p256dh: { type: String },
+      auth: { type: String }
+    },
+    type: { type: String, default: "webpush" } // optional
+  },
   smartReminders: {
   type: Boolean,
   default: false

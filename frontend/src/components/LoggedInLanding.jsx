@@ -9,6 +9,8 @@ import WorkflowSection from "./WorkflowSection";
 import { fetchAdherence } from "../features/api/adherence";
 import { toggleSmartReminder } from "../features/api/settings";
 import { useState, useEffect } from "react";
+import { registerPush } from "@/pushNotification.js";
+import axios from "axios";
 
 const LoggedInLanding = () => {
   const doses = [
@@ -54,6 +56,51 @@ const LoggedInLanding = () => {
     }
     return "bg-slate-50 border border-slate-200";
   };
+
+
+useEffect(() => {
+  const getKeyAndRegister = async () => {
+    try {
+      console.log(Notification.permission); 
+// likely shows "default" if never asked, or "granted"/"denied"
+
+      // Step 1: Ask user permission
+      const permission = await Notification.requestPermission();
+      if (permission !== "granted") {
+        console.log("User denied notifications");
+        return; // Stop if user doesn't allow
+      }
+
+      // Step 2: Fetch VAPID key from backend
+      const token = localStorage.getItem("token");
+      const res = await axios.get(
+        "http://localhost:7000/api/push/vapid-public-key",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("VAPID key response:", res.data);
+
+      if (res.data?.publicKey) {
+        // Step 3: Register push subscription
+        await registerPush(res.data.publicKey);
+      } else {
+        console.error("No public key received from backend");
+      }
+    } catch (err) {
+      console.error("Error fetching VAPID key:", err);
+    }
+  };
+
+  getKeyAndRegister();
+}, []);
+
+
+
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 px-6 md:px-20 py-10 space-y-10">
@@ -108,7 +155,8 @@ const LoggedInLanding = () => {
           <CardContent>
             <Progress value={85} className="h-3 rounded-full bg-slate-200" />
             <p className="text-slate-600 mt-2 text-sm">
-              You’ve taken <span className="font-semibold">17 of 20 doses</span> this week 🎯
+              You’ve taken <span className="font-semibold">17 of 20 doses</span>{" "}
+              this week 🎯
             </p>
           </CardContent>
         </Card>
