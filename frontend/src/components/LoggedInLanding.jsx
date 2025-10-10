@@ -30,13 +30,12 @@ const LoggedInLanding = () => {
   // Compute next upcoming dose (any future date)
   useEffect(() => {
     const now = new Date();
-    console.log("doses",doses)
     if (doses?.length) {
       const upcoming = doses
         .filter((d) => new Date(d.scheduledAt) > now)
         .sort((a, b) => new Date(a.scheduledAt) - new Date(b.scheduledAt));
       setNextDose(upcoming[0] || null);
-      console.log("upcoming",upcoming)
+
       // Weekly adherence calculation
       const startOfWeek = new Date();
       startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay()); // Sunday
@@ -137,7 +136,7 @@ const LoggedInLanding = () => {
                     {new Date(nextDose.scheduledAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </p>
                 </div>
-                <Button className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-4">Mark Taken</Button>
+                {/* <Button className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-4">Mark Taken</Button> */}
               </>
             ) : (
               <p className="text-slate-600">No upcoming doses</p>
