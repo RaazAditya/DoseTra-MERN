@@ -3,7 +3,8 @@ import { getIO, getConnectedUsers } from "../sockets/socket.js";
 import cron from "node-cron";
 import User from "../models/User.js";
 import { sendEmail } from "../utils/emailService.js";
-
+import webpush from "web-push";
+import { sendPushNotification } from "../utils/webPush.js";
 /**
  * Create notifications for a list of doses
  * @param {Array} doses - Array of dose objects
@@ -83,6 +84,28 @@ export const startNotificationJob = () => {
               : null,
           });
 
+          // 2️⃣ Browser push notification (real push)
+          if (user?.pushSubscription) {
+            // Construct payload same as email content (simpler, push notifications should be concise)
+            const payload = {
+              title: "DoseTra Reminder 💊",
+              body: `
+Hello ${user.name || "User"},
+Time to take your medicine:
+• Medicine: ${medicine?.name || "-"}
+• Dosage: ${dose?.scheduleId?.dosage || "-"}
+• Form: ${medicine?.form || "-"}
+• Scheduled At: ${dose?.scheduledAt.toLocaleString()}
+    `.trim(),
+            };
+
+            console.log("Sending push:", payload);
+
+            await webpush.sendNotification(
+              user.pushSubscription,
+              JSON.stringify(payload)
+            );
+          }
           // 2️⃣ Email notification
           if (email) {
             const htmlContent = `

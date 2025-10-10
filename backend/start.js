@@ -4,6 +4,8 @@ import { initSocket } from "./sockets/socket.js";
 import { startNotificationJob } from "./services/notificationService.js";
 import http from "http";
 
+
+
 export default async function startServer() {
   try {
     await connectDB();
