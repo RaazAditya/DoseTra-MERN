@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Search, Check, X } from "lucide-react";
-import { getDoses } from "@/features/api/doseApi";
+import { getDoses, updateMultipleDoses } from "@/features/api/doseApi";
 
 
 export default function DoseLogPage() {
   const [doseLogs, setDoseLogs] = useState([]);
+  const [updatedDoses, setUpdatedDoses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState("");
@@ -129,27 +130,50 @@ export default function DoseLogPage() {
     );
   };
 
-const handleMarkTaken = async (id) => {
-  try {
-    await markDoseTaken(id); // update DB
+
+const handleStatusChange = (id, newStatus) => {
     setDoseLogs((prev) =>
-      prev.map((d) => (d._id === id ? { ...d, status: "taken" } : d))
-    ); // update UI
-  } catch (error) {
-    console.error(error);
+      prev.map((d) => (d._id === id ? { ...d, status: newStatus } : d))
+    );
+
+    setUpdatedDoses((prev) => {
+      const existing = prev.find((u) => u._id === id);
+      if (existing) {
+        return prev.map((u) => (u._id === id ? { ...u, status: newStatus } : u));
+      }
+      return [...prev, { _id: id, status: newStatus }];
+    });
+  };
+
+ const handleSaveDoses = async () => {
+  if (updatedDoses.length === 0) {
+    alert("No changes to save.");
+    navigate(`/`);
+  }
+
+  try {
+    const { success, updatedDoses: updatedList } = await updateMultipleDoses(updatedDoses);
+
+    if (!success) throw new Error("Failed to update doses");
+
+    // Update frontend state
+    setDoseLogs((prev) =>
+      prev.map((dose) => {
+        const updated = updatedList.find((u) => u._id === dose._id);
+        return updated ? { ...dose, ...updated } : dose;
+      })
+    );
+
+    setUpdatedDoses([]);
+    alert("All doses updated successfully!");
+    navigate(`/`);
+  } catch (err) {
+    console.error("Error updating doses:", err);
+    alert("Failed to save doses. Please try again.");
   }
 };
 
-const handleMarkMissed = async (id) => {
-  try {
-    await markDoseMissed(id); // update DB
-    setDoseLogs((prev) =>
-      prev.map((d) => (d._id === id ? { ...d, status: "missed" } : d))
-    ); // update UI
-  } catch (error) {
-    console.error(error);
-  }
-};
+
 
 
   return (
@@ -262,7 +286,7 @@ const handleMarkMissed = async (id) => {
                             size="sm"
                             variant="outline"
                             className="bg-green-50 text-green-600 hover:bg-green-100"
-                            onClick={() => handleMarkTaken(d._id)}
+                            onClick={() => handleStatusChange(d._id, "taken")}
                             aria-label="Mark as taken"
                             title="Mark as taken"
                           >
@@ -272,7 +296,7 @@ const handleMarkMissed = async (id) => {
                             size="sm"
                             variant="outline"
                             className="bg-red-50 text-red-600 hover:bg-red-100"
-                            onClick={() => handleMarkMissed(d._id)}
+                            onClick={() => handleStatusChange(d._id, "missed")}
                             aria-label="Mark as missed"
                             title="Mark as missed"
                           >
@@ -292,6 +316,17 @@ const handleMarkMissed = async (id) => {
           </div>
 
           <div className="flex gap-2 flex-wrap justify-end mt-4">
+            <button
+              onClick={handleSaveDoses}
+              disabled={updatedDoses.length === 0}
+              className={`px-5 py-2 rounded-lg bg-slate-900 text-white font-semibold hover:bg-slate-800 transition ${
+                updatedDoses.length === 0
+                  ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                  : "bg-slate-900 text-white hover:bg-slate-800"
+              }`}
+              >
+                Save Doses
+              </button>
             <button
               onClick={() => alert("Export CSV functionality pending")}
               className="px-4 py-2 bg-purple-200 rounded hover:bg-purple-300"

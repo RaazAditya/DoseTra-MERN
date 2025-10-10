@@ -17,15 +17,12 @@ export const getDoses = async () => {
   return res.data;
 };
 
-
-// Mark as taken
-export const markDoseTaken = async (id) => {
-  const res = await API.put(`/${id}/mark-taken`,null,getAuthConfig());
-  return res.data;
-};
-
-// Mark as missed
-export const markDoseMissed = async (id) => {
-  const res = await API.put(`/${id}/mark-missed`,null,getAuthConfig());
+//  Bulk update multiple doses
+export const updateMultipleDoses = async (doses) => {
+  const res = await API.put(
+    "/update-multiple",
+    { doses }, // body
+    getAuthConfig()
+  );
   return res.data;
 };

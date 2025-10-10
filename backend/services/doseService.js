@@ -55,3 +55,23 @@ export const getAllDoses = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
+export const updateMultipleDoses = async (dosesToUpdate) => {
+  try {
+    const results = await Promise.all(
+      dosesToUpdate.map(async (dose) => {
+        const updated = await Dose.findByIdAndUpdate(
+          dose._id,
+          { status: dose.status },
+          { new: true }
+        );
+        return updated;
+      })
+    );
+
+    return results.filter(Boolean); // remove nulls if any dose not found
+  } catch (err) {
+    console.error("Error updating multiple doses:", err);
+    throw err;
+  }
+};

@@ -1,7 +1,6 @@
-import express from "express";
-import { markTaken, markMissed, rescheduleDose, getDoseLogs } from "../controllers/doseController.js"; 
+import express from "express"; 
 import authMiddleware from "../middleware/authMiddlewares.js";
-import { getAllDoses } from "../services/doseService.js"; 
+import { getAllDoses, updateMultipleDoses } from "../services/doseService.js"; 
 
 const router = express.Router();
 
@@ -10,16 +9,23 @@ router.use(authMiddleware);
 // GET all doses
 router.get("/", getAllDoses);
 
-// Mark dose as taken
-router.put("/:id/mark-taken", markTaken);
+// Multiple dose update route
+router.put("/update-multiple", async (req, res) => {
+  try {
+    const { doses } = req.body;
 
-// Mark dose as missed
-router.put("/:id/mark-missed", markMissed);
+    if (!Array.isArray(doses) || doses.length === 0) {
+      return res.status(400).json({ success: false, message: "No doses provided" });
+    }
 
-// Reschedule a dose
-router.put("/:id/reschedule", rescheduleDose);
+    const updatedDoses = await updateMultipleDoses(doses);
 
-// Get dose logs
-router.get("/logs", getDoseLogs);
+    res.status(200).json({ success: true, updatedDoses });
+  } catch (err) {
+    console.error("Error in bulk dose update route:", err);
+    res.status(500).json({ success: false, message: "Failed to update doses" });
+  }
+});
+
 
 export default router;
