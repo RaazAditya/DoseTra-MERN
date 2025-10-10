@@ -17,6 +17,7 @@ const notificationSchema = new mongoose.Schema(
       enum: ["email", "browser"],
       required: true,
     },
+    scheduledAt: Date,
     title: { type: String, required: true },
     message: { type: String, required: true },
     sentAt: { type: Date, default: Date.now },

@@ -1,6 +1,8 @@
 import Notification from "../models/Notification.js";
 import { getIO, getConnectedUsers } from "../sockets/socket.js";
 import cron from "node-cron";
+import User from "../models/User.js";
+import { sendEmail } from "../utils/emailService.js";
 
 /**
  * Create notifications for a list of doses
@@ -10,8 +12,6 @@ import cron from "node-cron";
  */
 export const createNotificationsForDoses = async (doses, userId) => {
   if (!doses || doses.length === 0) return [];
-  console.log("doses")
-  console.log(doses)
   const notifications = doses.map((dose) => ({
     userId,
     doseId: dose._id, // ✅ reference the correct dose
@@ -23,14 +23,15 @@ export const createNotificationsForDoses = async (doses, userId) => {
     status: "pending",
     seen: false,
     sentAt: null,
+    scheduledAt: dose.scheduledAt,
   }));
-  console.log("notifications")
-  console.log(notifications)
 
   return await Notification.insertMany(notifications);
 };
 
-// Cron job to push pending notifications
+/**
+ * Cron job: send pending notifications via browser + email
+ */
 export const startNotificationJob = () => {
   cron.schedule("* * * * *", async () => {
     const now = new Date();
@@ -38,56 +39,72 @@ export const startNotificationJob = () => {
     const connectedUsers = getConnectedUsers();
 
     try {
-      console.log("Connected users:", connectedUsers);
-
+      // Iterate over connected users
       for (const [userId, socketId] of connectedUsers.entries()) {
-        // Fetch pending notifications and populate Dose → Schedule → Medicine
+        // Fetch pending notifications
         const notifications = await Notification.find({
           userId,
           status: "pending",
-          createdAt: { $lte: now },
+          scheduledAt: { $lte: now },
         }).populate({
           path: "doseId",
-          model: "Dose",
           populate: {
             path: "scheduleId",
-            model: "Schedule",
-            populate: {
-              path: "medicineId",
-              model: "Medicine",
-              select: "name dosage form frequency instructions",
-            },
+            populate: { path: "medicineId", select: "name dosage form" },
           },
         });
+
         if (!notifications.length) continue;
+
+        // Fetch user email
+        const user = await User.findById(userId);
+        const email = user?.email;
 
         for (const notif of notifications) {
           const dose = notif.doseId;
           const schedule = dose?.scheduleId;
           const medicine = schedule?.medicineId;
 
+          // 1️⃣ Browser notification
           io.to(socketId).emit("notification", {
             _id: notif._id,
             title: notif.title,
             message: notif.message,
             type: notif.type,
-            createdAt: notif.createdAt,  // ✅ include original creation time
+            createdAt: notif.createdAt,
             doseInfo: dose
               ? {
                   scheduledAt: dose.scheduledAt,
                   status: dose.status,
-                  // Schedule info
-                  scheduleFrequency: schedule?.frequency,
-                  scheduleDosage: schedule?.dosage,
-                  // Medicine info
-                  medicineName: medicine?.name || "Medicine",
+                  medicineName: medicine?.name,
                   medicineDosage: medicine?.dosage,
                   form: medicine?.form,
-                  instructions: medicine?.instructions,
                 }
               : null,
           });
-          // Update status to "sent"
+
+          // 2️⃣ Email notification
+          if (email) {
+            const htmlContent = `
+    <div style="font-family: Arial, sans-serif; line-height:1.5; color:#333;">
+      <h2 style="color:#4F46E5;">DoseTra Reminder</h2>
+      <p>Hello ${user.name || "User"},</p>
+      <p>It's time to take your medicine:</p>
+      <ul>
+        <li><strong>Medicine:</strong> ${medicine?.name || "Medicine"}</li>
+        <li><strong>Dosage:</strong> ${dose?.scheduleId?.dosage || "-"}</li>
+        <li><strong>Form:</strong> ${medicine?.form || "-"}</li>
+        <li><strong>Scheduled At:</strong> ${dose?.scheduledAt.toLocaleString()}</li>
+      </ul>
+      <p style="color:#4F46E5;">Stay healthy! 💊</p>
+      <hr />
+      <p style="font-size:0.85rem; color:#888;">This is an automated reminder from DoseTra.</p>
+    </div>
+  `;
+            await sendEmail(email, "Dose Reminder from DoseTra", htmlContent);
+          }
+
+          // 3️⃣ Update status to sent
           notif.status = "sent";
           notif.sentAt = new Date();
           await notif.save();
@@ -98,5 +115,5 @@ export const startNotificationJob = () => {
     }
   });
 
-  console.log("⏰ Notification cron job started");
+  console.log("⏰ Notification cron job with email started");
 };
