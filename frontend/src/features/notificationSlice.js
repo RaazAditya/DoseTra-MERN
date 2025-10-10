@@ -42,6 +42,7 @@ const notificationSlice = createSlice({
     markAllSeenLocally: (state) => {
       state.items = state.items.map((n) => ({ ...n, seen: true }));
     },
+    resetNotificationState: () => ({ items: [], unseenCount: 0 }), // ✅ Reset function
   },
 
   extraReducers: (builder) => {
@@ -60,5 +61,5 @@ const notificationSlice = createSlice({
   },
 });
 
-export const { addNotification,markAllSeenLocally } = notificationSlice.actions;
+export const { addNotification,markAllSeenLocally ,resetNotificationState} = notificationSlice.actions;
 export default notificationSlice.reducer;
