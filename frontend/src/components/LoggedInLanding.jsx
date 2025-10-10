@@ -21,7 +21,7 @@ const LoggedInLanding = () => {
   const [nextDose, setNextDose] = useState(null);
   const [weeklyAdherence, setWeeklyAdherence] = useState(0);
 
-  const user = JSON.parse(localStorage.getItem("user")) || {};
+  const { user } = useSelector((state) => state.auth);
 
   useEffect(() => {
      dispatch(fetchDoses());
