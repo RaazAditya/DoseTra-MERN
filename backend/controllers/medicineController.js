@@ -66,11 +66,30 @@ export const updateMedicine = asyncHandler(async (req, res) => {
     .json({ message: "Medicine updated successfully", medicine });
 });
 
-export const deleteMedicine = asyncHandler(async(req, res) => {
+export const deleteMedicine = asyncHandler(async (req, res) => {
+  try {
     const { id } = req.params;
-    const medicine = await Medicine.findOneAndDelete({ _id: id, userId: req.user.id });
-    if (!medicine) {
-        return res.status(404).json({ message: "Medicine not found" });
-    }
-    return res.status(200).json({ message: "Medicine deleted successfully" });
+    const medicine = await Medicine.findById(id);
+
+    if (!medicine)
+      return res.status(404).json({ message: "Medicine not found" });
+
+    await medicine.deleteOne(); // triggers cascading delete of schedules, doses, notifications
+
+    res
+      .status(200)
+      .json({
+        success: true,
+        message:
+          "Medicine and related schedules/doses/notifications deleted successfully",
+      });
+  } catch (err) {
+    console.error(err);
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Server error while deleting medicine",
+      });
+  }
 });
