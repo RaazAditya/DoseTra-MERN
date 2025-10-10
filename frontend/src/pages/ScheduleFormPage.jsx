@@ -4,11 +4,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchMedicines } from "@/features/medicineSlice";
+import { getMedicineById } from "@/features/api/medicineApi";
 
 export default function ScheduleFormPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { id } = useParams(); // Will contain schedule ID if editing
+  const {scheduleId, medicineId} = useParams(); // Will contain schedule ID if editing
 
   // Medicines for dropdown
   const { medicines } = useSelector((state) => state.medicine);
@@ -26,6 +27,7 @@ export default function ScheduleFormPage() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   // Fetch medicines for dropdown from backend
   useEffect(() => {
@@ -34,32 +36,57 @@ export default function ScheduleFormPage() {
 
   // Fetch schedule if editing (id exists)
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (id) {
-      setLoading(true);
-      axios
-        .get(`http://localhost:7000/api/schedules/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        .then((res) => {
-          const sch = res.data;
-          
+  const token = localStorage.getItem("token");
+  if (!token) return;
 
-          // When editing
-          setForm({
-            medicineId: sch.medicineId?._id || "",
-            dosage: sch.dosage || "",
-            frequency: sch.frequency || "",
-            startDate: sch.startDate ? sch.startDate.split("T")[0] : "",
-            endDate: sch.endDate ? sch.endDate.split("T")[0] : "",
-            times: sch.times && sch.times.length > 0 ? sch.times : [""],
-            active: sch.active ?? true,
-          });
-        })
-        .catch((err) => console.error("Failed to fetch schedule:", err))
-        .finally(() => setLoading(false));
+  const fetchData = async () => {
+    setLoading(true);
+
+    try {
+      if (scheduleId) {
+        // Editing schedule
+        const res = await axios.get(
+          `http://localhost:7000/api/schedules/${scheduleId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        const sch = res.data;
+        setForm({
+          medicineId: sch.medicineId?._id || "",
+          medicineName: sch.medicineId?.name || "",
+          dosage: sch.dosage || "",
+          frequency: sch.frequency || "",
+          startDate: sch.startDate?.split("T")[0] || "",
+          endDate: sch.endDate?.split("T")[0] || "",
+          times: sch.times.length ? sch.times : [""],
+          active: sch.active ?? true,
+        });
+      } else if (medicineId) {
+        // New schedule from medicine
+        const medRes = await axios.get(
+          `http://localhost:7000/api/v1/medicine/${medicineId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        const med = medRes.data.medicine || medRes.data;
+        setForm((prev) => ({
+          ...prev,
+          medicineId: med._id,
+          medicineName: med.name,
+          dosage: med.dosage,
+          frequency: med.frequency || "",
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      alert("Failed to fetch data");
+    } finally {
+      setLoading(false);
     }
-  }, [id]);
+  };
+
+  fetchData();
+}, [scheduleId, medicineId]);
+
+
 
   // Handle basic input change (text, select, date)
   const handleChange = (e) => {
@@ -93,7 +120,7 @@ export default function ScheduleFormPage() {
     const token = localStorage.getItem("token");
 
     try {
-      if (id) {
+      if (isEditing) {
         // Edit existing schedule
         await axios.put(`http://localhost:7000/api/schedules/${id}`, form, {
           headers: { Authorization: `Bearer ${token}` },
@@ -123,28 +150,19 @@ export default function ScheduleFormPage() {
     <div className="min-h-screen flex items-center justify-center bg-slate-100">
       <div className="bg-white/90 shadow-xl rounded-xl p-6 w-full max-w-lg backdrop-blur-md">
         <h1 className="text-2xl font-bold text-center text-slate-900 mb-6">
-          {id ? "Edit Schedule" : "Add Schedule"}
+          {isEditing ? "Edit Schedule" : "Add Schedule"}
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Select Medicine */}
           <div>
-            <label className="block mb-1 text-slate-700">Select Medicine</label>
-            <select
-              name="medicineId"
-              value={form.medicineId}
-              onChange={handleChange}
-              required
-              className="w-full border rounded px-3 py-2"
-            >
-              <option value="">-- Choose medicine --</option>
-              {Array.isArray(medicines) &&
-                medicines.map((m) => (
-                  <option key={m._id} value={m._id}>
-                    {m.name} ({m.form})
-                  </option>
-                ))}
-            </select>
+            <label className="block mb-1 text-slate-700">Medicine Name</label>
+            <input
+            type="text"
+            value={form.medicineName}
+            disabled
+            className="w-full border rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
+            />
           </div>
 
           {/* Dosage */}
@@ -152,12 +170,9 @@ export default function ScheduleFormPage() {
             <label className="block mb-1 text-slate-700">Dosage</label>
             <input
               type="text"
-              name="dosage"
               value={form.dosage}
-              onChange={handleChange}
-              placeholder="e.g., 500mg"
-              required
-              className="w-full border rounded px-3 py-2"
+              disabled
+              className="w-full border rounded px-3 py-2 bg-gray-100 text-gray-600"
             />
           </div>
 
@@ -166,12 +181,9 @@ export default function ScheduleFormPage() {
             <label className="block mb-1 text-slate-700">Frequency</label>
             <input
               type="text"
-              name="frequency"
               value={form.frequency}
-              onChange={handleChange}
-              placeholder="e.g., Twice a day"
-              required
-              className="w-full border rounded px-3 py-2"
+              disabled
+              className="w-full border rounded px-3 py-2 bg-gray-100 text-gray-600"
             />
           </div>
 
