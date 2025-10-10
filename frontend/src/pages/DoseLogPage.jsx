@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "../../components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Search, Check, X } from "lucide-react";
 import { getDoses } from "@/features/api/doseApi";
+
+import { markDoseTaken, markDoseMissed } from "@/features/api/doseApi";
 
 export default function DoseLogPage() {
   const [doseLogs, setDoseLogs] = useState([]);
@@ -62,7 +64,7 @@ export default function DoseLogPage() {
           : d
       )
     );
-  }, [doseLogs]);
+  }, []);
 
   // Reset page when filters/search change
   useEffect(() => {
@@ -128,16 +130,28 @@ export default function DoseLogPage() {
     );
   };
 
-  const handleMarkTaken = (id) => {
+const handleMarkTaken = async (id) => {
+  try {
+    await markDoseTaken(id); // update DB
     setDoseLogs((prev) =>
       prev.map((d) => (d._id === id ? { ...d, status: "taken" } : d))
-    );
-  };
-  const handleMarkMissed = (id) => {
+    ); // update UI
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const handleMarkMissed = async (id) => {
+  try {
+    await markDoseMissed(id); // update DB
     setDoseLogs((prev) =>
       prev.map((d) => (d._id === id ? { ...d, status: "missed" } : d))
-    );
-  };
+    ); // update UI
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 
   return (
     <div className="min-h-screen p-8 bg-slate-100">

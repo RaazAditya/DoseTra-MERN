@@ -44,7 +44,7 @@ export const getAllDoses = async (req, res) => {
           select: "name form dosage", // only fetch needed fields
         },
       })
-      .sort({ scheduledAt: 1 });
+      .sort({ scheduledAt: -1 });
 
     res.status(200).json({
       success: true,
