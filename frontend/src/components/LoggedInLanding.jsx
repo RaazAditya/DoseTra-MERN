@@ -6,32 +6,65 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { CalendarDays, Pill, BarChart3, Brain } from "lucide-react";
 import WorkflowSection from "./WorkflowSection";
+import { fetchAdherence } from "../features/api/adherence";
+import { toggleSmartReminder } from "../features/api/settings";
+import { useState, useEffect } from "react";
 
 const LoggedInLanding = () => {
-  const user = { name: "Aditya" };
-
+  
   const doses = [
     { id: 1, name: "Paracetamol 500mg", time: "9:00 AM", status: "taken" },
     { id: 2, name: "Amoxicillin 250mg", time: "2:00 PM", status: "pending" },
     { id: 3, name: "Vitamin D", time: "8:00 PM", status: "upcoming" },
   ];
 
+  const user = { _id: "USER_ID", name: "Aditya" }; // replace with real logged-in user
+
+  const [insight, setInsight] = useState("");
+  const [riskPeriods, setRiskPeriods] = useState([]);
+  const [enabled, setEnabled] = useState(false);
+
+  useEffect(() => {
+  fetchAdherence(user._id)
+    .then(data => {
+      const periods = data?.riskPeriods || []; // default to empty array
+      setRiskPeriods(periods);
+
+      if (periods.length > 0) {
+        setInsight(`You often miss your ${periods.join(", ")} doses. Would you like to enable adaptive reminders?`);
+      } else {
+        setInsight("Great job! No risky patterns detected 🎉");
+      }
+    })
+    .catch(err => {
+      console.error("Error fetching adherence:", err);
+      setRiskPeriods([]);
+      setInsight("Unable to fetch adherence data.");
+    });
+}, [user._id]);
+
+
+  const handleToggle = async () => {
+    const res = await toggleSmartReminder(user._id, !enabled);
+    setEnabled(res.smartReminders);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 px-6 md:px-20 py-10 space-y-10">
-      {/* 🌅 Welcome Banner */}
+      {/*  Welcome Banner */}
       <motion.section
         className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-10 rounded-3xl shadow-lg"
         initial={{ opacity: 0, y: -30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <h2 className="text-4xl font-bold">Welcome back, {user.name} 👋</h2>
+        <h2 className="text-4xl font-bold">Welcome back, {user?.name || "User"} </h2>
         <p className="text-lg opacity-90 mt-2">
           Stay consistent, stay healthy — here’s your daily summary.
         </p>
       </motion.section>
 
-      {/* 💊 Next Dose Card */}
+      {/*  Next Dose Card */}
       <motion.div
         className="grid md:grid-cols-2 gap-8"
         initial={{ opacity: 0 }}
@@ -59,7 +92,7 @@ const LoggedInLanding = () => {
           </CardContent>
         </Card>
 
-        {/* 📈 Adherence Summary */}
+        {/* Adherence Summary */}
         <Card className="rounded-3xl shadow-lg border border-slate-100 hover:shadow-xl transition">
           <CardHeader>
             <CardTitle className="text-xl flex items-center gap-2">
@@ -78,7 +111,7 @@ const LoggedInLanding = () => {
 
       <Separator />
 
-      {/* 📅 Today’s Schedule */}
+      {/* Today’s Schedule */}
       <motion.section
         className="space-y-5"
         initial={{ opacity: 0 }}
@@ -136,28 +169,27 @@ const LoggedInLanding = () => {
       </motion.section>
       
 
-      {/* 💡 AI Insights */}
+      {/*  AI Insights */}
       <motion.section
         className="bg-gradient-to-r from-blue-50 to-indigo-100 p-6 rounded-3xl shadow-md flex flex-col md:flex-row items-center justify-between gap-6"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.6 }}
       >
         <div className="flex items-start gap-3">
           <Brain className="w-8 h-8 text-indigo-600 mt-1" />
           <div>
             <h4 className="text-lg font-semibold text-slate-800">AI Insight 💡</h4>
-            <p className="text-slate-700 mt-1">
-              You tend to miss your evening doses on weekends. Would you like to
-              enable adaptive reminders?
-            </p>
+            <p className="text-slate-700 mt-1">{insight}</p>
           </div>
         </div>
-        <Button className="bg-slate-900 text-white rounded-xl px-5 hover:bg-slate-800">
-          Enable Smart Reminder
-        </Button>
+
+        {riskPeriods.length > 0 && (
+          <Button
+            className="bg-slate-900 text-white rounded-xl px-5 hover:bg-slate-800"
+            onClick={handleToggle}
+          >
+            {enabled ? "Disable Smart Reminder" : "Enable Smart Reminder"}
+          </Button>
+        )}
       </motion.section>
-      
     </div>
   );
 };
