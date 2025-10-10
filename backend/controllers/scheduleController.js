@@ -47,18 +47,19 @@ export const getSchedule = async (req, res) => {
 
 // Update Schedule
 export const updateSchedule = async (req, res) => {
+
   const schedule = await Schedule.findOneAndUpdate(
     { _id: req.params.id },
     req.body,
     { new: true }
   );
+  
   res.json(schedule);
 };
 
 // Delete/Deactivate Schedule
 export const deleteSchedule = async (req, res) => {
-  console.log("i am in deleteSchedule")
-  console.log("this ",req.params.id)
+
   await Schedule.findOneAndUpdate(
     { _id: req.params.id },
     { active: false }

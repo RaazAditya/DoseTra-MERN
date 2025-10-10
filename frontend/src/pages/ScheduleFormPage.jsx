@@ -10,7 +10,6 @@ export default function ScheduleFormPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const {scheduleId, medicineId} = useParams(); // Will contain schedule ID if editing
-
   // Medicines for dropdown
   const { medicines } = useSelector((state) => state.medicine);
 
@@ -49,6 +48,7 @@ export default function ScheduleFormPage() {
           `http://localhost:7000/api/schedules/${scheduleId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
+        setIsEditing(true)
         const sch = res.data;
         setForm({
           medicineId: sch.medicineId?._id || "",
@@ -122,7 +122,7 @@ export default function ScheduleFormPage() {
     try {
       if (isEditing) {
         // Edit existing schedule
-        await axios.put(`http://localhost:7000/api/schedules/${id}`, form, {
+        await axios.put(`http://localhost:7000/api/schedules/${scheduleId}`, form, {
           headers: { Authorization: `Bearer ${token}` },
         });
         alert("Schedule updated successfully!");
