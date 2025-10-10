@@ -7,6 +7,7 @@ import doseRoutes from "./routes/doseRoutes.js"
 import notificationRoutes from "./routes/notificationsRoutes.js"
 import adherenceRoutes from "./routes/adherenceRoutes.js"
 import userSettingsRoutes from "./routes/userSettings.js"
+import insightsRoutes from "./routes/insightsRoutes.js"
 
 const app = express();
 
@@ -26,5 +27,6 @@ app.use("/api/doses", doseRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/adherence", adherenceRoutes);
 app.use("/api/settings", userSettingsRoutes);
+app.use("/api/insights", insightsRoutes);
 
 export {app}

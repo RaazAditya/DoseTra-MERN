@@ -76,7 +76,7 @@ useEffect(() => {
   const handleLogout = () => {
     dispatch(logout());
     window.dispatchEvent(new Event("logout"));
-    navigate("/login");
+    navigate("/");
     setDropdownOpen(false);
   };
 

@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Search, Check, X } from "lucide-react";
 import { getDoses } from "@/features/api/doseApi";
 
-import { markDoseTaken, markDoseMissed } from "@/features/api/doseApi";
 
 export default function DoseLogPage() {
   const [doseLogs, setDoseLogs] = useState([]);

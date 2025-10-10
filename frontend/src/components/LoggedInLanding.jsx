@@ -11,42 +11,48 @@ import { toggleSmartReminder } from "../features/api/settings";
 import { useState, useEffect } from "react";
 
 const LoggedInLanding = () => {
-  
   const doses = [
     { id: 1, name: "Paracetamol 500mg", time: "9:00 AM", status: "taken" },
     { id: 2, name: "Amoxicillin 250mg", time: "2:00 PM", status: "pending" },
     { id: 3, name: "Vitamin D", time: "8:00 PM", status: "upcoming" },
   ];
 
-  const user = { _id: "USER_ID", name: "Aditya" }; // replace with real logged-in user
+  const user = { _id: "USER_ID", name: "USER_NAME" }; // replace with real logged-in user
 
   const [insight, setInsight] = useState("");
   const [riskPeriods, setRiskPeriods] = useState([]);
   const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
-  fetchAdherence(user._id)
-    .then(data => {
-      const periods = data?.riskPeriods || []; // default to empty array
-      setRiskPeriods(periods);
-
-      if (periods.length > 0) {
-        setInsight(`You often miss your ${periods.join(", ")} doses. Would you like to enable adaptive reminders?`);
-      } else {
-        setInsight("Great job! No risky patterns detected 🎉");
-      }
-    })
-    .catch(err => {
-      console.error("Error fetching adherence:", err);
-      setRiskPeriods([]);
-      setInsight("Unable to fetch adherence data.");
-    });
-}, [user._id]);
-
+    fetchAdherence(user._id)
+      .then((data) => {
+        setRiskPeriods(data.riskPeriods || []);
+        setInsight(data.message || "No insights available.");
+      })
+      .catch((err) => {
+        console.error("Error fetching adherence:", err);
+        setRiskPeriods([]);
+        setInsight("Unable to fetch adherence data.");
+      });
+  }, [user._id]);
 
   const handleToggle = async () => {
     const res = await toggleSmartReminder(user._id, !enabled);
     setEnabled(res.smartReminders);
+  };
+
+  // Color classes based on message type
+  const getInsightClasses = () => {
+    if (insight.startsWith("Great job")) {
+      return "bg-green-50 border border-green-200";
+    }
+    if (insight.startsWith("⚠️")) {
+      return "bg-yellow-50 border border-yellow-200";
+    }
+    if (insight.startsWith("Unable")) {
+      return "bg-red-50 border border-red-200";
+    }
+    return "bg-slate-50 border border-slate-200";
   };
 
   return (
@@ -64,7 +70,7 @@ const LoggedInLanding = () => {
         </p>
       </motion.section>
 
-      {/*  Next Dose Card */}
+      {/*  Next Dose Card + Weekly Adherence */}
       <motion.div
         className="grid md:grid-cols-2 gap-8"
         initial={{ opacity: 0 }}
@@ -92,7 +98,6 @@ const LoggedInLanding = () => {
           </CardContent>
         </Card>
 
-        {/* Adherence Summary */}
         <Card className="rounded-3xl shadow-lg border border-slate-100 hover:shadow-xl transition">
           <CardHeader>
             <CardTitle className="text-xl flex items-center gap-2">
@@ -159,25 +164,25 @@ const LoggedInLanding = () => {
           ))}
         </div>
       </motion.section>
+
       <motion.section
         className="space-y-5"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
       >
-        <WorkflowSection/>
+        <WorkflowSection />
       </motion.section>
-      
 
       {/*  AI Insights */}
       <motion.section
-        className="bg-gradient-to-r from-blue-50 to-indigo-100 p-6 rounded-3xl shadow-md flex flex-col md:flex-row items-center justify-between gap-6"
+        className={`from-blue-50 to-indigo-100 p-6 rounded-3xl shadow-md flex flex-col md:flex-row items-center justify-between gap-6 ${getInsightClasses()}`}
       >
         <div className="flex items-start gap-3">
           <Brain className="w-8 h-8 text-indigo-600 mt-1" />
           <div>
             <h4 className="text-lg font-semibold text-slate-800">AI Insight 💡</h4>
-            <p className="text-slate-700 mt-1">{insight}</p>
+            <p className="mt-1">{insight}</p>
           </div>
         </div>
 
