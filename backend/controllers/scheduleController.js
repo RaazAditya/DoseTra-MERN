@@ -59,10 +59,17 @@ export const updateSchedule = async (req, res) => {
 
 // Delete/Deactivate Schedule
 export const deleteSchedule = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const schedule = await Schedule.findById(id);
 
-  await Schedule.findOneAndUpdate(
-    { _id: req.params.id },
-    { active: false }
-  );
-  res.json({ message: "Schedule deactivated" });
+    if (!schedule) return res.status(404).json({ message: "Schedule not found" });
+
+    await schedule.deleteOne(); // triggers cascading delete of doses and notifications
+
+    res.status(200).json({ success: true, message: "Schedule and related doses/notifications deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Server error while deleting schedule" });
+  }
 };

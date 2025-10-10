@@ -26,3 +26,4 @@ export const updateMultipleDoses = async (doses) => {
   );
   return res.data;
 };
+

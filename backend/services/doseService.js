@@ -33,6 +33,7 @@ export const createDosesForSchedule = async (schedule, userId) => {
 };
 
 export const getAllDoses = async (req, res) => {
+  console.log(req.user._id)
   try {
     const userId = req.user._id; // or however you're storing it (JWT, session, etc.)
 
