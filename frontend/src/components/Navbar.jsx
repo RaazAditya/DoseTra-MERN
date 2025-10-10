@@ -104,13 +104,12 @@ useEffect(() => {
     <nav className="top-0 flex justify-between items-center p-4 bg-slate-900 text-white shadow-md z-50">
       {/* Logo */}
       <div className="flex items-center space-x-3">
-        <img
+        <Link to="/" className="text-2xl font-bold">
+          <img
           src="/logo.png"
           alt="DoseTra Logo"
           className="w-50 h-15 object-contain"
         />
-        <Link to="/" className="text-2xl font-bold">
-          
         </Link>
       </div>
 
