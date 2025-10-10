@@ -7,7 +7,7 @@ export const fetchNotifications = createAsyncThunk(
   "notifications/fetchAll",
   async () => {
     const token = localStorage.getItem("token");
-    const res = await axios.get("http://localhost:7000/api/notifications", {
+    const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/notifications`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     return res.data; // [{...}, {...}]
@@ -20,7 +20,7 @@ export const markNotificationsSeen = createAsyncThunk(
   async () => {
     const token = localStorage.getItem("token");
     await axios.patch(
-      "http://localhost:7000/api/notifications/mark-seen",
+      `${import.meta.env.VITE_BACKEND_URL}/api/notifications/mark-seen`,
       {},
       { headers: { Authorization: `Bearer ${token}` } }
     );
@@ -42,7 +42,7 @@ const notificationSlice = createSlice({
     markAllSeenLocally: (state) => {
       state.items = state.items.map((n) => ({ ...n, seen: true }));
     },
-    resetNotificationState: () => ({ items: [], unseenCount: 0 }), // ✅ Reset function
+    resetNotificationState: () => ({ items: [], unseenCount: 0 }), //  Reset function
   },
 
   extraReducers: (builder) => {

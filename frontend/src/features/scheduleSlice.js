@@ -3,7 +3,7 @@ import axios from "axios";
 
 export const fetchSchedules = createAsyncThunk("schedules/fetchSchedules", async () => {
   const token = localStorage.getItem("token");
-  const response = await axios.get("http://localhost:7000/api/schedules", {
+  const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/schedules`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   return response.data;

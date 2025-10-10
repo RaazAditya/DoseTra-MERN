@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const USER_API = "http://localhost:7000/api/v1/auth";
+const USER_API = `${import.meta.env.VITE_BACKEND_URL}/api/v1/auth`;
 
 export const registerUser = async (formData) => {
   const res = await axios.post(`${USER_API}/register`, formData);

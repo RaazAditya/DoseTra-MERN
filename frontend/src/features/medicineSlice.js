@@ -29,7 +29,7 @@ const medicineSlice = createSlice({
   name: "medicine",
   initialState,
   reducers: {
-    resetMedicineState: () => initialState,  // ✅ Reset function
+    resetMedicineState: () => initialState,  //  Reset function
   },
   extraReducers: (builder) => {
     builder

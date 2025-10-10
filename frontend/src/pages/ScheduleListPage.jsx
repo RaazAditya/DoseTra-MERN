@@ -19,7 +19,7 @@ export default function ScheduleListPage() {
       const token = localStorage.getItem("token");
       try {
         setLoading(true);
-        const res = await axios.get("http://localhost:7000/api/schedules", {
+        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/schedules`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setSchedules(
@@ -39,7 +39,7 @@ export default function ScheduleListPage() {
     if (!window.confirm("Are you sure you want to delete this schedule?")) return;
     const token = localStorage.getItem("token");
     try {
-      await axios.delete(`http://localhost:7000/api/schedules/${id}`, {
+      await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/api/schedules/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setSchedules((prev) =>

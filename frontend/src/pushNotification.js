@@ -3,29 +3,29 @@ import axios from "axios";
 export const registerPush = async (vapidPublicKey) => {
   if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
 
-  // 1️⃣ Ask user for notification permission
+  // 1️ Ask user for notification permission
   const permission = await Notification.requestPermission();
   if (permission !== "granted") {
     console.log("🚫 Push notifications permission denied");
     return;
   }
 
-  // 2️⃣ Register service worker
+  // 2️ Register service worker
   const sw = await navigator.serviceWorker.register("/sw.js");
   console.log("✅ Service Worker registered:", sw);
 
-  // 3️⃣ Subscribe to push manager
+  // 3 Subscribe to push manager
   const subscription = await sw.pushManager.subscribe({
     userVisibleOnly: true,
     applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
   });
 
-  // 4️⃣ Send subscription to backend with Axios & JWT
+  // 4️ Send subscription to backend with Axios & JWT
   try {
     const token = localStorage.getItem("token"); // your auth token
 
     const res = await axios.post(
-      "http://localhost:7000/api/push/subscribe",
+      `${import.meta.env.VITE_BACKEND_URL}/api/push/subscribe`,
       { subscription },
       {
         headers: {
@@ -35,9 +35,9 @@ export const registerPush = async (vapidPublicKey) => {
       }
     );
 
-    console.log("✅ Browser push subscription sent to server:", res.data);
+    console.log(" Browser push subscription sent to server:", res.data);
   } catch (err) {
-    console.error("❌ Error sending push subscription:", err);
+    console.error(" Error sending push subscription:", err);
   }
 };
 

@@ -76,7 +76,7 @@ const LoggedInLanding = () => {
         if (permission !== "granted") return;
 
         const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:7000/api/push/vapid-public-key", {
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/push/vapid-public-key`, {
           headers: { Authorization: `Bearer ${token}` },
         }).then((r) => r.json());
 

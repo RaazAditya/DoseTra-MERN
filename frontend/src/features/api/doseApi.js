@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:7000/api/doses", // adjust if hosted elsewhere
+  baseURL: `${import.meta.env.VITE_BACKEND_URL}/api/doses`, // adjust if hosted elsewhere
   withCredentials: true, // only if you’re using JWT/cookies
 });
 

@@ -3,7 +3,7 @@ import axios from "axios";
 
 export const fetchDoses = createAsyncThunk("doses/fetchDoses", async () => {
   const token = localStorage.getItem("token");
-  const response = await axios.get("http://localhost:7000/api/doses", {
+  const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/doses`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   return response.data;
