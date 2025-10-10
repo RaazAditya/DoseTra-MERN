@@ -8,7 +8,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Edit, Trash, Plus, Search, Star } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { getMedicines, deleteMedicine } from "@/features/api/medicineApi";
 import { motion } from "framer-motion";
 
@@ -22,11 +22,11 @@ const MedicineListPage = () => {
 
   const navigate = useNavigate();
 
-    const fetchMedicines = async () => {
+  const fetchMedicines = async () => {
     try {
       setLoading(true);
-      const res = await getMedicines();        // <-- uses your API
-      setMedicines(res || []);            // backend returns {message, data:[...]}
+      const res = await getMedicines(); // <-- uses your API
+      setMedicines(res || []); // backend returns {message, data:[...]}
     } catch (err) {
       console.error("Failed to fetch medicines:", err);
       alert(err.response?.data?.message || "Failed to fetch medicines");
@@ -35,7 +35,7 @@ const MedicineListPage = () => {
     }
   };
 
-   useEffect(() => {
+  useEffect(() => {
     // setTimeout(() => {
     //   setMedicines([
     //     {
@@ -249,7 +249,6 @@ const MedicineListPage = () => {
     setCurrentPage(1);
   }, [search, filter]);
 
-
   const filteredMedicines = medicines.filter(
     (m) =>
       (!search ||
@@ -302,14 +301,15 @@ const MedicineListPage = () => {
     );
   }
 
-// Delete Handler
+  // Delete Handler
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this medicine?"))  {   try {
+    if (window.confirm("Are you sure you want to delete this medicine?")) {
+      try {
         await deleteMedicine(id);
-        fetchMedicines(); 
-        alert("Messaged deleted successfully")
+        fetchMedicines();
+        alert("Messaged deleted successfully");
         // setMedicines(medicines.filter((m) => m._id !== id));
-       } catch (err) {
+      } catch (err) {
         alert("Failed to delete medicine");
       }
     }
@@ -325,7 +325,9 @@ const MedicineListPage = () => {
           className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4"
         >
           <div className="flex items-center gap-2 mb-2 md:mb-0">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Your Medicines</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+              Your Medicines
+            </h1>
             <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-medium">
               {medicines.length} total
             </span>
@@ -421,6 +423,15 @@ const MedicineListPage = () => {
                     <TableCell>{med.frequency}</TableCell>
                     <TableCell>{med.instructions || "-"}</TableCell>
                     <TableCell className="flex gap-3 justify-center py-2">
+                      <Link to={`/schedules/new/${med._id}`}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 focus:ring-2 focus:ring-indigo-400"
+                        >
+                          Add Schedules
+                        </Button>
+                      </Link>
                       <Button
                         size="sm"
                         variant="outline"
@@ -473,4 +484,4 @@ const MedicineListPage = () => {
   );
 };
 
-export default MedicineListPage; 
+export default MedicineListPage;

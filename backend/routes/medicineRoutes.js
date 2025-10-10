@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.use(authMiddleware)
 
-router.post("/", addMedicine);
+router.post("/", addMedicine)
 router.get("/", getAllMedicine)
 router.get("/:id", getMedicineById)
 router.put("/:id", updateMedicine)
