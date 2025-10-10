@@ -162,6 +162,30 @@ const Navbar = () => {
                   >
                     Dashboard
                   </Link>
+
+                  {/* New items */}
+                  <Link
+                    to="/medicines"
+                    className="block px-4 py-2 hover:bg-slate-100 transition"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    Add Medicine
+                  </Link>
+                  <Link
+                    to="/schedules"
+                    className="block px-4 py-2 hover:bg-slate-100 transition"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    Schedules
+                  </Link>
+                  <Link
+                    to="/dose-logs"
+                    className="block px-4 py-2 hover:bg-slate-100 transition"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    Dose Logs
+                  </Link>
+
                   <button
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-2 hover:bg-slate-100 transition"
