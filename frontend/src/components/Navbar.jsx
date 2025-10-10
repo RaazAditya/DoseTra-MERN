@@ -105,12 +105,12 @@ useEffect(() => {
       {/* Logo */}
       <div className="flex items-center space-x-3">
         <img
-          src="/logo.jpg"
+          src="/logo.png"
           alt="DoseTra Logo"
-          className="w-10 h-10 object-contain"
+          className="w-50 h-15 object-contain"
         />
         <Link to="/" className="text-2xl font-bold">
-          DoseTra
+          
         </Link>
       </div>
 
