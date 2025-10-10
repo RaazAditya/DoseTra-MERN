@@ -29,6 +29,9 @@ export const markMissed = async (req, res) => {
       { status: "missed" },
       { new: true }
     );
+    if (!dose) {
+      return res.status(404).json({ message: "Dose not found" });
+    }
 
     await DoseLog.create({ doseId: req.params.id, action: "missed" });
 
@@ -50,18 +53,10 @@ export const markMissed = async (req, res) => {
       }, 15 * 60 * 1000); // 15 minutes
     }
 
-    res.json(dose);
+    res.json({success: true, dose});
   } catch (err) {
     console.error("Error marking dose missed:", err);
     res.status(500).json({ message: "Failed to mark dose as missed" });
-    if (!dose) {
-      return res.status(404).json({ message: "Dose not found" });
-    }
-
-    res.json({ success: true, dose });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
