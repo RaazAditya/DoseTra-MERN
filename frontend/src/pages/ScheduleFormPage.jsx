@@ -45,7 +45,7 @@ export default function ScheduleFormPage() {
       if (scheduleId) {
         // Editing schedule
         const res = await axios.get(
-          `http://localhost:7000/api/schedules/${scheduleId}`,
+          `${import.meta.env.VITE_BACKEND_URL}/api/schedules/${scheduleId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setIsEditing(true)
@@ -63,7 +63,7 @@ export default function ScheduleFormPage() {
       } else if (medicineId) {
         // New schedule from medicine
         const medRes = await axios.get(
-          `http://localhost:7000/api/v1/medicine/${medicineId}`,
+          `${import.meta.env.VITE_BACKEND_URL}/api/v1/medicine/${medicineId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const med = medRes.data.medicine || medRes.data;
@@ -122,14 +122,14 @@ export default function ScheduleFormPage() {
     try {
       if (isEditing) {
         // Edit existing schedule
-        await axios.put(`http://localhost:7000/api/schedules/${scheduleId}`, form, {
+        await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/schedules/${scheduleId}`, form, {
           headers: { Authorization: `Bearer ${token}` },
         });
         alert("Schedule updated successfully!");
       } else {
         // Create new schedule
 
-        await axios.post("http://localhost:7000/api/schedules", form, {
+        await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/schedules`, form, {
           headers: { Authorization: `Bearer ${token}` },
         });
         alert("Schedule created successfully!");

@@ -38,7 +38,7 @@ export default function ScheduleFormPage() {
     if (id) {
       setLoading(true);
       axios
-        .get(`http://localhost:7000/api/schedules/${id}`, {
+        .get(`${import.meta.env.VITE_BACKEND_URL}/api/schedules/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((res) => {
@@ -109,14 +109,14 @@ export default function ScheduleFormPage() {
     try {
       if (id) {
         // Edit existing schedule
-        await axios.put(`http://localhost:7000/api/schedules/${id}`, form, {
+        await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/schedules/${id}`, form, {
           headers: { Authorization: `Bearer ${token}` },
         });
         alert("Schedule updated successfully!");
       } else {
         // Create new schedule
 
-        await axios.post("http://localhost:7000/api/schedules", form, {
+        await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/schedules`, form, {
           headers: { Authorization: `Bearer ${token}` },
         });
         alert("Schedule created successfully!");

@@ -5,7 +5,7 @@ let socket;
 export const initSocket = (userId, token, onNotification) => {
   if (socket) return socket;
 
-  socket = io("http://localhost:7000", {
+  socket = io(`${import.meta.env.VITE_BACKEND_URL}`, {
     extraHeaders: {
       Authorization: `Bearer ${token}`,
     },
