@@ -13,6 +13,7 @@ import { loadUser } from "./features/authSlice";
 import ScheduleListPage from "./pages/ScheduleListPage";
 import ScheduleFormPage from "./pages/ScheduleFormPage";
 import DoseLogPage from "./pages/DoseLogPage";
+import ScheduleForm from "./pages/ScheduleForm"
 
 
 import DashboardPage from "./pages/DashboardPage";
@@ -39,8 +40,9 @@ const App = () => {
         <Route path="/get" element={<ProfilePage />} />
 
         <Route path="/schedules" element={<ScheduleListPage />} />
-        <Route path="/schedules/new/:medicineId" element={<ScheduleFormPage />} />
+        <Route path="/schedules/new/:medicineId?" element={<ScheduleFormPage />} />
         <Route path="/schedules/edit/:scheduleId" element={<ScheduleFormPage />} />
+        <Route path="/schedules/new" element={<ScheduleForm />} />
 
       
         <Route path="/dose-logs" element={<DoseLogPage />} />

@@ -34,6 +34,7 @@ const notificationSchema = new mongoose.Schema(
       },
     },
     seen: { type: Boolean, default: false },
+    scheduledAt: Date,
   },
   { timestamps: true }
 );

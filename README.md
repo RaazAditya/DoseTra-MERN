@@ -8,16 +8,16 @@ This project provides a **personalized, convenient, and intelligent solution** f
 ## 📌 Problem Statement
 
 Managing daily medicines is challenging:  
-- People often forget **dosages, timings, or frequency** ⏰  
-- Simple alarms don’t track **taken vs. missed doses** ❌  
-- No **personalized insights** or predictive nudges 📉  
-- Lack of integration with **personal calendars** 📅
+- People often forget **dosages, timings, or frequency** 
+- Simple alarms don’t track **taken vs. missed doses** 
+- No **personalized insights** or predictive nudges 
+- Lack of integration with **personal calendars** 
 
 **Goal**: Build a unified system that:  
 - Allows users to **manage medicine schedules** (CRUD)  
 - Sends **reminders via browser/email**  
 - Tracks **adherence and missed doses**  
-- Predicts **high-risk missed times** using AI 🤖  
+- Predicts **high-risk missed times** using AI  
 - Provides **dashboards, graphs, and chatbot assistance**  
 - Syncs schedules with **Google Calendar**
 

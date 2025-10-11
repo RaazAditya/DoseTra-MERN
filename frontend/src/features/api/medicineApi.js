@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const MEDICINE_API = "http://localhost:7000/api/v1/medicine";
+const MEDICINE_API = `${import.meta.env.VITE_BACKEND_URL}/api/v1/medicine`;
 
 const getAuthConfig = () => {
   const token = localStorage.getItem("token");

@@ -28,7 +28,9 @@ export const deleteMedicineById = createAsyncThunk("medicine/delete", async (id)
 const medicineSlice = createSlice({
   name: "medicine",
   initialState,
-  reducers: {},
+  reducers: {
+    resetMedicineState: () => initialState,  //  Reset function
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchMedicines.pending, (state) => { state.loading = true; })
@@ -45,4 +47,5 @@ const medicineSlice = createSlice({
   },
 });
 
+export const { resetMedicineState } = medicineSlice.actions;
 export default medicineSlice.reducer;

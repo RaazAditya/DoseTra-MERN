@@ -56,7 +56,6 @@ const RegisterPage = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {error && <p className="text-red-500 text-sm">{error}</p>}
           {success && <p className="text-green-600 text-sm">{success}</p>}
 
           <form onSubmit={handleSubmit} className="space-y-4">

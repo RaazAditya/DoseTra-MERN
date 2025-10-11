@@ -10,7 +10,9 @@ import {
   fetchNotifications,
   addNotification,
   markNotificationsSeen,
-} from "@/features/notificationSlice";
+  resetNotificationState,
+} from "@/features/notificationSlice.js";
+import { resetMedicineState } from "@/features/medicineSlice.js";
 import { initSocket } from "@/sockets/socketClient";
 
 const Navbar = () => {
@@ -24,7 +26,6 @@ const Navbar = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-
   //  useEffect(() => {
   //   const count = notifications.filter((n) => n.status === "sent" && !n.seen).length;
   //   unseenCount=count
@@ -36,19 +37,19 @@ const Navbar = () => {
   }, [dispatch]);
 
   useEffect(() => {
-  if (isAuthenticated) dispatch(fetchNotifications());
-}, [isAuthenticated, dispatch]);
+    if (isAuthenticated) dispatch(fetchNotifications());
+  }, [isAuthenticated, dispatch]);
 
-// Realtime updates via socket
-useEffect(() => {
-  if (!user) return;
-  const token = localStorage.getItem("token");
-  if (!socketRef.current) {
-    socketRef.current = initSocket(user._id, token, (notification) => {
-      dispatch(addNotification(notification));
-    });
-  }
-}, [user, dispatch]);
+  // Realtime updates via socket
+  useEffect(() => {
+    if (!user) return;
+    const token = localStorage.getItem("token");
+    if (!socketRef.current) {
+      socketRef.current = initSocket(user._id, token, (notification) => {
+        dispatch(addNotification(notification));
+      });
+    }
+  }, [user, dispatch]);
   // Fetch notifications on mount
   useEffect(() => {
     if (isAuthenticated) dispatch(fetchNotifications());
@@ -75,6 +76,8 @@ useEffect(() => {
 
   const handleLogout = () => {
     dispatch(logout());
+    dispatch(resetMedicineState());
+    dispatch(resetNotificationState());
     window.dispatchEvent(new Event("logout"));
     navigate("/");
     setDropdownOpen(false);
@@ -85,7 +88,7 @@ useEffect(() => {
       return;
 
     try {
-      const token = localStorage.getItem("token")
+      const token = localStorage.getItem("token");
       await deleteUserProfile(token);
       handleLogout();
       alert("Account deleted successfully.");
@@ -106,73 +109,99 @@ useEffect(() => {
       <div className="flex items-center space-x-3">
         <Link to="/" className="text-2xl font-bold">
           <img
-          src="/logo.png"
-          alt="DoseTra Logo"
-          className="w-50 h-15 object-contain"
-        />
+            src="/logo.png"
+            alt="DoseTra Logo"
+            className="w-50 h-15 object-contain"
+          />
         </Link>
       </div>
 
       {/* Right Side */}
       <div className="flex items-center space-x-4">
         {/* Notification Bell */}
-        <button
-          className="relative p-2 rounded-full hover:bg-slate-800 transition"
-          onClick={handleBellClick}
-        >
-          <Bell className="w-6 h-6 text-white" />
-          {unseenCount > 0 && (
-            <span className="absolute top-0 right-0 min-w-[16px] h-4 text-xs flex items-center justify-center bg-red-500 text-white rounded-full px-1">
-              {unseenCount}
-            </span>
-          )}
-        </button>
 
         {/* User Dropdown */}
         {user && isAuthenticated ? (
-          <div className="relative" ref={dropdownRef}>
+          <>
             <button
-              onClick={() => setDropdownOpen((prev) => !prev)}
-              className="flex items-center space-x-2 focus:outline-none"
+              className="relative p-2 rounded-full hover:bg-slate-800 transition"
+              onClick={handleBellClick}
             >
-              <Avatar className="w-10 h-10">
-                <AvatarFallback className="bg-slate-700 text-white hover:bg-slate-600">
-                  {getInitials(user.name)}
-                </AvatarFallback>
-              </Avatar>
+              <Bell className="w-6 h-6 text-white" />
+              {unseenCount > 0 && (
+                <span className="absolute top-0 right-0 min-w-[16px] h-4 text-xs flex items-center justify-center bg-red-500 text-white rounded-full px-1">
+                  {unseenCount}
+                </span>
+              )}
             </button>
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setDropdownOpen((prev) => !prev)}
+                className="flex items-center space-x-2 focus:outline-none"
+              >
+                <Avatar className="w-10 h-10">
+                  <AvatarFallback className="bg-slate-700 text-white hover:bg-slate-600">
+                    {getInitials(user.name)}
+                  </AvatarFallback>
+                </Avatar>
+              </button>
 
-            {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white text-slate-900 rounded-lg shadow-lg border border-gray-200 z-50">
-                <Link
-                  to="/get"
-                  className="block px-4 py-2 hover:bg-slate-100 transition"
-                  onClick={() => setDropdownOpen(false)}
-                >
-                  Edit Profile
-                </Link>
-                <Link
-                  to="/dashboard"
-                  className="block px-4 py-2 hover:bg-slate-100 transition"
-                  onClick={() => setDropdownOpen(false)}
-                >
-                  Dashboard
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="w-full text-left px-4 py-2 hover:bg-slate-100 transition"
-                >
-                  Logout
-                </button>
-                <button
-                  onClick={handleDelete}
-                  className="w-full text-left px-4 py-2 hover:bg-slate-100 transition"
-                >
-                  Delete Account
-                </button>
-              </div>
-            )}
-          </div>
+              {dropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white text-slate-900 rounded-lg shadow-lg border border-gray-200 z-50">
+                  <Link
+                    to="/get"
+                    className="block px-4 py-2 hover:bg-slate-100 transition"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    Edit Profile
+                  </Link>
+                  <Link
+                    to="/dashboard"
+                    className="block px-4 py-2 hover:bg-slate-100 transition"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+
+                  {/* New items */}
+                  <Link
+                    to="/medicines"
+                    className="block px-4 py-2 hover:bg-slate-100 transition"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    Add Medicine
+                  </Link>
+                  <Link
+                    to="/schedules"
+                    className="block px-4 py-2 hover:bg-slate-100 transition"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    Schedules
+                  </Link>
+                  <Link
+                    to="/dose-logs"
+                    className="block px-4 py-2 hover:bg-slate-100 transition"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    Dose Logs
+                  </Link>
+
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-4 py-2 hover:bg-slate-100 transition"
+                  >
+                    Logout
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    className="w-full text-left px-4 py-2 hover:bg-slate-100 transition"
+                  >
+                    Delete Account
+                  </button>
+                </div>
+              )}
+            </div>
+          </>
         ) : (
           <Link
             to="/register"
