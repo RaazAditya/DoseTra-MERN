@@ -45,7 +45,7 @@ const Chatbot = () => {
     scrollToBottom();
 
     try {
-      const res = await fetch("http://localhost:7000/api/chatbot", {
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/chatbot`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: newMsg.text, userId: user?._id }),
