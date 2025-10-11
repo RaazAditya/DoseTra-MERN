@@ -10,6 +10,7 @@ import userSettingsRoutes from "./routes/userSettings.js"
 import pushRoutes from "./routes/pushRoutes.js"
 import insightsRoutes from "./routes/insightsRoutes.js"
 
+
 const app = express();
 
 // default middleware
@@ -31,5 +32,7 @@ app.use("/api/settings", userSettingsRoutes);
 app.use("/api/push", pushRoutes);
 
 app.use("/api/insights", insightsRoutes);
+
+
 
 export {app}

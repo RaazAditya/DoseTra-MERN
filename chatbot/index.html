@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Chatbot</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <!-- Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Emoji Picker -->
+  <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
+</head>
+<body>
+
+  <!-- Floating Chat Button -->
+  <button class="chat-toggle-btn" id="chatToggle">
+    <span class="material-icons-outlined">chat</span>
+  </button>
+
+  <!-- Chat Window -->
+  <div class="chat-container" id="chatContainer">
+    <div class="chat-header">
+      <div class="header-left">
+        <span class="material-icons-outlined">smart_toy</span>
+        <span class="title">DoseTra AI</span>
+      </div>
+      <button class="close-btn" id="closeBtn">
+        <span class="material-icons-outlined">expand_more</span>
+      </button>
+    </div>
+
+    <div class="chat-body" id="chatBody">
+      <div class="bot-message">
+        <span class="material-icons-outlined bot-icon">smart_toy</span>
+        <div class="message">Hey there 👋<br>How can I help you today?</div>
+      </div>
+    </div>
+
+    <div class="chat-input">
+      <div class="input-icons">
+        <button class="emoji-btn" id="emojiBtn">
+          <span class="material-icons-outlined">emoji_emotions</span>
+        </button>
+        <input type="file" id="fileInput" class="file-input" />
+        <label for="fileInput" class="file-label">
+          <span class="material-icons-outlined">attach_file</span>
+        </label>
+      </div>
+
+      <input type="text" id="userInput" placeholder="Type a message..." />
+      <button id="sendBtn">
+        <span class="material-icons-outlined">send</span>
+      </button>
+
+      <emoji-picker id="emojiPicker" style="
+        display:none;
+        position:absolute;
+        bottom:70px;
+        left:20px;
+        z-index:2000;
+        box-shadow:0 4px 12px rgba(0,0,0,0.2);
+        border-radius:10px;">
+      </emoji-picker>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
+<emoji-picker id="emojiPicker" style="display:none; position:absolute; bottom:60px; right:60px; z-index:1000;"></emoji-picker>
+</body>
+</html>
