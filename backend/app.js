@@ -9,7 +9,7 @@ import adherenceRoutes from "./routes/adherenceRoutes.js"
 import userSettingsRoutes from "./routes/userSettings.js"
 import pushRoutes from "./routes/pushRoutes.js"
 import insightsRoutes from "./routes/insightsRoutes.js"
-
+import chatbotRoutes from "./routes/chatbotRoute.js"
 
 const app = express();
 
@@ -30,7 +30,7 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/adherence", adherenceRoutes);
 app.use("/api/settings", userSettingsRoutes);
 app.use("/api/push", pushRoutes);
-
+app.use("/api/chatbot", chatbotRoutes);
 app.use("/api/insights", insightsRoutes);
 
 

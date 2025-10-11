@@ -20,6 +20,7 @@ import MedicineListPage from "./pages/medPages/MedicineListPage";
 import MedicineFormPage from "./pages/medPages/MedicineFormPage";
 import EditMedicinePage from "./pages/medPages/EditMedicinePage";
 import NotificationsPage from "./pages/NotificationsPage";
+import Chatbot from "./components/Chatbot";
 
 
 const App = () => {
@@ -50,7 +51,7 @@ const App = () => {
 
         <Route path="/notifications" element={<NotificationsPage/>}/>
       </Routes>
-      
+      <Chatbot/>
       <Footer />
     </div>
   );
