@@ -22,6 +22,7 @@ import MedicineFormPage from "./pages/medPages/MedicineFormPage";
 import EditMedicinePage from "./pages/medPages/EditMedicinePage";
 import NotificationsPage from "./pages/NotificationsPage";
 
+
 const App = () => {
   const dispatch = useDispatch();
   useEffect(() => {
@@ -51,6 +52,7 @@ const App = () => {
 
         <Route path="/notifications" element={<NotificationsPage/>}/>
       </Routes>
+      
       <Footer />
     </div>
   );
