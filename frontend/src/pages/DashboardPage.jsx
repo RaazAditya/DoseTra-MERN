@@ -188,7 +188,7 @@ const DashboardPage = () => {
                   {cardData.icon}
                   <CardTitle className="text-lg font-semibold">
                     {type === "Adherence"
-                      ? "Adherence"
+                      ? "Last Seven Days Adherence"
                       : type === "Upcoming"
                       ? "Upcoming Doses"
                       : "Missed Doses"}
