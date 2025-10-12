@@ -21,12 +21,12 @@ const Chatbot = () => {
   const [sending, setSending] = useState(false);
   const chatBodyRef = useRef(null);
 
-  // useEffect(() => {
-  //   setMessages([
-  //     { from: "bot", text: "Hey there 👋<br>How can I help you today?" },
-  //   ]);
-  //   console.log(user)
-  // }, [user]); // triggers only when user
+  useEffect(() => {
+    setMessages([
+      { from: "bot", text: "Hey there 👋<br>How can I help you today?" },
+    ]);
+    console.log(user)
+  }, [user]); // triggers only when user
 
   const scrollToBottom = () => {
     setTimeout(() => {
@@ -52,12 +52,13 @@ const Chatbot = () => {
     scrollToBottom();
 
     try {
+      console.log("here ",user)
       const res = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/api/chatbot`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: newMsg.text, userId: user?._id }),
+          body: JSON.stringify({ message: newMsg.text, userId: user?.id }),
         }
       );
 

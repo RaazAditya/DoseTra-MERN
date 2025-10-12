@@ -46,7 +46,6 @@ export const getAllDoses = async (req, res) => {
         },
       })
       .sort({ scheduledAt: -1 });
-
     res.status(200).json({
       success: true,
       doses,
