@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Picker from "@emoji-mart/react";
 import data from "@emoji-mart/data";
 import "./Chatbot.css";
@@ -11,15 +11,22 @@ import ChatIcon from "@mui/icons-material/Chat";
 import { useSelector } from "react-redux";
 
 const Chatbot = () => {
-    const {user} = useSelector((state)=>state.auth);
+  const { user } = useSelector((state) => state.auth);
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { from: "bot", text: "Hey there 👋<br>How can I help you today?" }
+    { from: "bot", text: "Hey there 👋<br>How can I help you today?" },
   ]);
   const [input, setInput] = useState("");
   const [showEmoji, setShowEmoji] = useState(false);
   const [sending, setSending] = useState(false);
   const chatBodyRef = useRef(null);
+
+  // useEffect(() => {
+  //   setMessages([
+  //     { from: "bot", text: "Hey there 👋<br>How can I help you today?" },
+  //   ]);
+  //   console.log(user)
+  // }, [user]); // triggers only when user
 
   const scrollToBottom = () => {
     setTimeout(() => {
@@ -40,16 +47,19 @@ const Chatbot = () => {
     // Add typing indicator
     setMessages((prev) => [
       ...prev,
-      { from: "bot", text: "<span class='thinking'>...</span>", temp: true }
+      { from: "bot", text: "<span class='thinking'>...</span>", temp: true },
     ]);
     scrollToBottom();
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/chatbot`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: newMsg.text, userId: user?._id }),
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/chatbot`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: newMsg.text, userId: user?._id }),
+        }
+      );
 
       const data = await res.json();
       setMessages((prev) =>
@@ -60,7 +70,12 @@ const Chatbot = () => {
       setMessages((prev) =>
         prev
           .filter((m) => !m.temp)
-          .concat([{ from: "bot", text: "⚠️ Server not responding. Please try again later." }])
+          .concat([
+            {
+              from: "bot",
+              text: "⚠️ Server not responding. Please try again later.",
+            },
+          ])
       );
       scrollToBottom();
     }
@@ -116,7 +131,7 @@ const Chatbot = () => {
       {/* Overlay and chatbot panel only when open */}
       {open && (
         <div className="chat-overlay" onClick={() => setOpen(false)}>
-          <div className="chat-container" onClick={e => e.stopPropagation()}>
+          <div className="chat-container" onClick={(e) => e.stopPropagation()}>
             <div className="chat-header">
               <div className="header-left">
                 <SmartToyIcon className="bot-icon" />
@@ -158,7 +173,8 @@ const Chatbot = () => {
                   className="emoji-btn"
                   type="button"
                   onClick={() => setShowEmoji((val) => !val)}
-                  aria-label="Toggle Emoji Picker">
+                  aria-label="Toggle Emoji Picker"
+                >
                   <EmojiEmotionsIcon />
                 </button>
 
@@ -184,14 +200,30 @@ const Chatbot = () => {
                 disabled={sending}
               />
 
-              <button onClick={handleSend} disabled={sending} id="sendBtn" aria-label="Send">
+              <button
+                onClick={handleSend}
+                disabled={sending}
+                id="sendBtn"
+                aria-label="Send"
+              >
                 <SendIcon />
               </button>
 
               <div style={{ position: "relative" }}>
                 {showEmoji && (
-                  <div style={{ position: "absolute", bottom: 40, left: 0, zIndex: 100 }}>
-                    <Picker data={data} onEmojiSelect={handleEmojiClick} theme="light" />
+                  <div
+                    style={{
+                      position: "absolute",
+                      bottom: 40,
+                      left: 0,
+                      zIndex: 100,
+                    }}
+                  >
+                    <Picker
+                      data={data}
+                      onEmojiSelect={handleEmojiClick}
+                      theme="light"
+                    />
                   </div>
                 )}
               </div>

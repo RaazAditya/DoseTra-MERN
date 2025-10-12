@@ -26,6 +26,7 @@ export const createNotificationsForDoses = async (doses, userId) => {
     sentAt: null,
     scheduledAt: dose.scheduledAt,
   }));
+  
 
   return await Notification.insertMany(notifications);
 };
