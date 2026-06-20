@@ -10,6 +10,8 @@ import userSettingsRoutes from "./routes/userSettings.js"
 import pushRoutes from "./routes/pushRoutes.js"
 import insightsRoutes from "./routes/insightsRoutes.js"
 import chatbotRoutes from "./routes/chatbotRoute.js"
+import calendarRoutes from "./routes/calendarRoutes.js"
+import aiRoutes from "./routes/aiRoutes.js"
 
 const app = express();
 
@@ -31,7 +33,9 @@ app.use("/api/adherence", adherenceRoutes);
 app.use("/api/settings", userSettingsRoutes);
 app.use("/api/push", pushRoutes);
 app.use("/api/chatbot", chatbotRoutes);
+app.use("/api/ai", aiRoutes);
 app.use("/api/insights", insightsRoutes);
+app.use("/api/calendar", calendarRoutes);
 
 
 

@@ -5,6 +5,7 @@ import User from "../models/User.js";
 import { sendEmail } from "../utils/emailService.js";
 import webpush from "web-push";
 import { sendPushNotification } from "../utils/webPush.js";
+import { getPersonalizedReminderNote } from "./adherenceAnalyticsService.js";
 /**
  * Create notifications for a list of doses
  * @param {Array} doses - Array of dose objects
@@ -67,11 +68,24 @@ export const startNotificationJob = () => {
           const schedule = dose?.scheduleId;
           const medicine = schedule?.medicineId;
 
+          const personalizedNote =
+            user?.smartReminders && dose?.scheduledAt
+              ? await getPersonalizedReminderNote(userId, dose.scheduledAt, user.timezone || "UTC")
+              : null;
+
+          const doseLine = `Time to take ${dose?.scheduleId?.dosage || medicine?.dosage || ""} of ${
+            medicine?.name || "your medicine"
+          } at ${dose?.scheduledAt?.toLocaleString() || "the scheduled time"}`;
+
+          const reminderMessage = personalizedNote
+            ? `${personalizedNote}\n\n${doseLine}`
+            : doseLine;
+
           // 1️⃣ Browser notification
           io.to(socketId).emit("notification", {
             _id: notif._id,
             title: notif.title,
-            message: notif.message,
+            message: reminderMessage,
             type: notif.type,
             createdAt: notif.createdAt,
             doseInfo: dose
@@ -87,16 +101,16 @@ export const startNotificationJob = () => {
 
           // 2️⃣ Browser push notification (real push)
           if (user?.pushSubscription) {
-            // Construct payload same as email content (simpler, push notifications should be concise)
             const payload = {
               title: "DoseTra Reminder 💊",
               body: `
 Hello ${user.name || "User"},
+${personalizedNote ? `${personalizedNote}\n` : ""}
 Time to take your medicine:
 • Medicine: ${medicine?.name || "-"}
 • Dosage: ${dose?.scheduleId?.dosage || "-"}
 • Form: ${medicine?.form || "-"}
-• Scheduled At: ${dose?.scheduledAt.toLocaleString()}
+• Scheduled At: ${dose?.scheduledAt?.toLocaleString() || "-"}
     `.trim(),
             };
 
@@ -113,6 +127,7 @@ Time to take your medicine:
     <div style="font-family: Arial, sans-serif; line-height:1.5; color:#333;">
       <h2 style="color:#4F46E5;">DoseTra Reminder</h2>
       <p>Hello ${user.name || "User"},</p>
+      ${personalizedNote ? `<p style="background:#EEF2FF;padding:12px;border-radius:8px;color:#4338CA;"><strong>${personalizedNote}</strong></p>` : ""}
       <p>It's time to take your medicine:</p>
       <ul>
         <li><strong>Medicine:</strong> ${medicine?.name || "Medicine"}</li>

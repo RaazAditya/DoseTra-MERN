@@ -1,10 +1,12 @@
 import React, { useEffect } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 import LandingPage from "./pages/LandingPage";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import RegisterPage from "./pages/authPages/RegisterPage";
 import LoginPage from "./pages/authPages/LoginPage";
+import VerifyEmailPage from "./pages/authPages/VerifyEmailPage";
 import ProfilePage from "./pages/authPages/ProfilePage";
 
 import { useDispatch } from "react-redux";
@@ -26,9 +28,23 @@ import Chatbot from "./components/Chatbot";
 
 const App = () => {
   const dispatch = useDispatch();
+  const [searchParams, setSearchParams] = useSearchParams();
+
   useEffect(() => {
     dispatch(loadUser());
   }, [dispatch]);
+
+  useEffect(() => {
+    const calendarParam = searchParams.get("calendar");
+    if (calendarParam === "connected") {
+      toast.success("Google Calendar connected!");
+      dispatch(loadUser());
+      setSearchParams({}, { replace: true });
+    } else if (calendarParam === "error") {
+      toast.error("Failed to connect Google Calendar.");
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, dispatch, setSearchParams]);
 
   return (
     <div className="bg-slate-50 min-h-screen flex flex-col">
@@ -37,6 +53,7 @@ const App = () => {
         <Route path="/" element={<LandingPage/>} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/get" element={<ProfilePage />} />
 
         <Route path="/schedules" element={<ScheduleListPage />} />

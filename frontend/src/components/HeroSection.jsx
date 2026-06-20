@@ -8,7 +8,7 @@ const HeroSection = () => {
       {/* Text */}
       <div className="md:w-1/2 space-y-6 text-center md:text-left">
         <h2 className="text-4xl sm:text-5xl font-extrabold text-slate-900 leading-tight">
-          Never Miss a Dose Again
+          Never Miss a Dose Again!
         </h2>
         <p className="text-slate-700 text-lg sm:text-xl">
           Managing daily medicines can be stressful. DoseTra helps you stay on top of your health by organizing your medicine schedule effortlessly.

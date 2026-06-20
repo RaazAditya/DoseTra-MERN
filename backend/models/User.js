@@ -15,11 +15,41 @@ const userSchema = new mongoose.Schema({
   },
   passwordHash: {
     type: String,
-    required: true
+    required: function () {
+      return this.provider === "local";
+    },
+  },
+  googleId: {
+    type: String,
+    sparse: true,
+    unique: true,
+  },
+  picture: {
+    type: String,
+    default: "",
+  },
+  provider: {
+    type: String,
+    enum: ["local", "google"],
+    default: "local",
+  },
+  isVerified: {
+    type: Boolean,
+    default: function () {
+      return this.provider === "google";
+    },
+  },
+  otp: {
+    type: String,
+    select: false,
+  },
+  otpExpiry: {
+    type: Date,
+    select: false,
   },
   timezone: {
     type: String,
-    default: "Asia/Mumbai"
+    default: "UTC",
   },
   settings: {
     notificationPreference: { 
@@ -32,20 +62,27 @@ const userSchema = new mongoose.Schema({
         default: "en" 
     }
   },
-  // ✅ Add push subscription for browser notifications
   pushSubscription: {
     endpoint: { type: String },
     keys: {
       p256dh: { type: String },
       auth: { type: String }
     },
-    type: { type: String, default: "webpush" } // optional
+    type: { type: String, default: "webpush" }
   },
   smartReminders: {
-  type: Boolean,
-  default: false
-}
-
+    type: Boolean,
+    default: false
+  },
+  googleCalendar: {
+    connected: { type: Boolean, default: false },
+    autoSync: { type: Boolean, default: true },
+    calendarId: { type: String, default: "primary" },
+    accessToken: { type: String, select: false },
+    refreshToken: { type: String, select: false },
+    tokenExpiry: { type: Date, select: false },
+    lastSyncedAt: { type: Date, default: null },
+  },
 }, { timestamps: true });
 
 export default mongoose.model("User", userSchema);

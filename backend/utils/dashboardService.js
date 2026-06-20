@@ -42,7 +42,7 @@ export const DashBoardSummary = asyncHandler(async (userId) => {
       schedule: d.scheduleId, // populated schedule
     }));
 
-  // 5️⃣ Missed trends (last 7 days)
+  // 5️ Missed trends (last 7 days)
   const missed = doses.filter((d) => {
     const log = doseLogs.find((l) => l.doseId === d.doseId);
     return log?.action === "missed" || d.status === "missed";

@@ -2,36 +2,38 @@ import mongoose from "mongoose";
 
 const syncEventSchema = new mongoose.Schema(
   {
-    syncEventId: { 
-        type: String, 
-        required: true, 
-        unique: true 
-    },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-    doseId: {
+    scheduleId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "DoseSchedule",
+      ref: "Schedule",
       required: true,
-    }, // links to specific dose
-    externalEventId: { 
-        type: String 
-    }, // Google Calendar event ID or other external calendar system
+    },
+    timeSlot: {
+      type: String,
+      required: true,
+    },
+    externalEventId: {
+      type: String,
+      required: true,
+    },
     status: {
       type: String,
       enum: ["pending", "synced", "deleted"],
-      default: "pending",
-    }, // tracks current state
-    lastSyncedAt: { 
-        type: Date, 
-        default: null
-    }, // timestamp of last successful sync
-    notes: { type: String }, 
+      default: "synced",
+    },
+    lastSyncedAt: {
+      type: Date,
+      default: Date.now,
+    },
+    notes: { type: String },
   },
   { timestamps: true }
 );
+
+syncEventSchema.index({ userId: 1, scheduleId: 1, timeSlot: 1 }, { unique: true });
 
 export default mongoose.model("SyncEvent", syncEventSchema);
