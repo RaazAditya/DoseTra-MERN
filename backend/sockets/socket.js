@@ -11,7 +11,7 @@ const verifyToken = (token) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
     return decoded.id;
   } catch (err) {
-    console.error("❌ Invalid token:", err.message);
+    console.error(" Invalid token:", err.message);
     return null;
   }
 };
@@ -25,7 +25,7 @@ export function initSocket(server) {
   });
 
   io.on("connection", (socket) => {
-    console.log("🔗 Client connected:", socket.id);
+    console.log(" Client connected:", socket.id);
 
     // Extract token from headers
     const authHeader = socket.handshake.headers.authorization;
@@ -36,14 +36,14 @@ export function initSocket(server) {
       userIdFromToken = verifyToken(token);
       if (userIdFromToken) {
         connectedUsers.set(userIdFromToken, socket.id);
-        console.log(`✅ Registered user ${userIdFromToken} via token with socket ${socket.id}`);
+        console.log(` Registered user ${userIdFromToken} via token with socket ${socket.id}`);
       } else {
-        console.log(`❌ Authentication failed for socket ${socket.id}`);
+        console.log(` Authentication failed for socket ${socket.id}`);
         socket.disconnect(true); // disconnect unauthenticated socket
         return;
       }
     } else {
-      console.log(`❌ No token provided for socket ${socket.id}`);
+      console.log(`No token provided for socket ${socket.id}`);
       socket.disconnect(true);
       return;
     }
