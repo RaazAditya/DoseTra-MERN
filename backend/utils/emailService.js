@@ -11,14 +11,15 @@ const transporter = nodemailer.createTransport({
 export const sendEmail = async (to, subject, htmlContent) => {
   try {
     const info = await transporter.sendMail({
-      from: `"DoseTra Reminder!!"`, // <-- Company name
+      from: `"DoseTra Reminder!!"`,
       to,
       subject,
-      html: htmlContent, // Use HTML instead of plain text
+      html: htmlContent,
     });
     console.log("📧 Email sent:", info.messageId);
     return info;
   } catch (err) {
     console.error("❌ Error sending email:", err);
+    throw err;
   }
 };

@@ -7,36 +7,38 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
-import { login } from "@/features/authSlice"; // your thunk/action
+import { login } from "@/features/authSlice";
+import GoogleLoginButton from "@/components/GoogleLoginButton";
+import { Separator } from "@/components/ui/separator";
 
 const LoginPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
-  const { loading, error } = useSelector((state) => state.auth);
+  const { loading } = useSelector((state) => state.auth);
 
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
-  // Handle input change
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
       await dispatch(login(formData)).unwrap();
-
-      toast.success(" Logged in successfully!");
-      navigate("/"); // redirect to landing page
+      toast.success("Logged in successfully!");
+      navigate("/");
     } catch (err) {
-      console.error("Login failed:", err);
-      toast.error(err?.message || "Login failed");
+      if (err?.code === "EMAIL_NOT_VERIFIED") {
+        toast.error("Please verify your email first.");
+        navigate("/verify-email", { state: { email: err.email || formData.email } });
+        return;
+      }
+      toast.error(err?.message || err || "Login failed");
     }
   };
 
@@ -50,7 +52,6 @@ const LoginPage = () => {
         </CardHeader>
 
         <CardContent>
-
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
               type="email"
@@ -80,6 +81,14 @@ const LoginPage = () => {
               {loading ? "Logging in..." : "Log In"}
             </Button>
           </form>
+
+          <div className="flex items-center gap-3 my-4">
+            <Separator className="flex-1 bg-slate-300" />
+            <span className="text-xs text-slate-500 uppercase">or</span>
+            <Separator className="flex-1 bg-slate-300" />
+          </div>
+
+          <GoogleLoginButton redirectTo="/" />
 
           <p className="text-center text-sm text-slate-600 mt-3">
             Don’t have an account?{" "}
