@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import Picker from "@emoji-mart/react";
 import data from "@emoji-mart/data";
 import "./Chatbot.css";
@@ -9,24 +9,48 @@ import SmartToyIcon from "@mui/icons-material/SmartToy";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChatIcon from "@mui/icons-material/Chat";
 import { useSelector } from "react-redux";
+import { sendChatMessage } from "@/features/api/chatbotApi";
+
+const GREETING = {
+  from: "bot",
+  text: "Hey there 👋<br>I'm your privacy-first Health Assistant. Ask about your <b>next dose</b>, <b>adherence</b>, or general medicine questions. Type <b>help</b> to see what I can do.",
+};
+
+const storageKey = (userId) => `dosetra-chat-${userId || "guest"}`;
+
+const loadHistory = (userId) => {
+  try {
+    const saved = sessionStorage.getItem(storageKey(userId));
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length) return parsed;
+    }
+  } catch {
+    /* ignore */
+  }
+  return [GREETING];
+};
 
 const Chatbot = () => {
   const { user } = useSelector((state) => state.auth);
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState([
-    { from: "bot", text: "Hey there 👋<br>How can I help you today?" },
-  ]);
+  const [messages, setMessages] = useState([GREETING]);
   const [input, setInput] = useState("");
   const [showEmoji, setShowEmoji] = useState(false);
   const [sending, setSending] = useState(false);
   const chatBodyRef = useRef(null);
 
   useEffect(() => {
-    setMessages([
-      { from: "bot", text: "Hey there 👋<br>How can I help you today?" },
-    ]);
-    console.log(user)
-  }, [user]); // triggers only when user
+    setMessages(loadHistory(user?.id));
+  }, [user?.id]);
+
+  const persistHistory = useCallback(
+    (msgs) => {
+      const toSave = msgs.filter((m) => !m.temp);
+      sessionStorage.setItem(storageKey(user?.id), JSON.stringify(toSave));
+    },
+    [user?.id]
+  );
 
   const scrollToBottom = () => {
     setTimeout(() => {
@@ -37,54 +61,65 @@ const Chatbot = () => {
   };
 
   const handleSend = async () => {
-    if (!input.trim()) return;
-    const newMsg = { from: "user", text: input };
-    setMessages((prev) => [...prev, newMsg]);
+    if (!input.trim() || sending) return;
+
+    const token = localStorage.getItem("token");
+    if (!user || !token) {
+      setMessages((prev) => [
+        ...prev,
+        { from: "user", text: input },
+        {
+          from: "bot",
+          text: "Please <b>log in</b> to use the Health Assistant. Your data stays private and is never sent to AI unless you ask a general health question.",
+          source: "database",
+        },
+      ]);
+      setInput("");
+      scrollToBottom();
+      return;
+    }
+
+    const userText = input.trim();
+    const newMsg = { from: "user", text: userText };
+    const withUser = [...messages.filter((m) => !m.temp), newMsg];
+    setMessages([...withUser, { from: "bot", temp: true, typing: true }]);
     setInput("");
     setShowEmoji(false);
     setSending(true);
-
-    // Add typing indicator
-    setMessages((prev) => [
-      ...prev,
-      { from: "bot", text: "<span class='thinking'>...</span>", temp: true },
-    ]);
     scrollToBottom();
 
     try {
-      console.log("here ",user)
-      const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/chatbot`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: newMsg.text, userId: user?.id }),
-        }
-      );
-
-      const data = await res.json();
-      setMessages((prev) =>
-        prev.filter((m) => !m.temp).concat([{ from: "bot", text: data.reply }])
-      );
-      scrollToBottom();
-    } catch {
-      setMessages((prev) =>
-        prev
-          .filter((m) => !m.temp)
-          .concat([
-            {
-              from: "bot",
-              text: "⚠️ Server not responding. Please try again later.",
-            },
-          ])
-      );
-      scrollToBottom();
+      const data = await sendChatMessage(userText, token);
+      const botMsg = {
+        from: "bot",
+        text: data.reply,
+        source: data.source || "database",
+      };
+      const updated = [...withUser, botMsg];
+      setMessages(updated);
+      persistHistory(updated);
+    } catch (err) {
+      const errorText =
+        err.response?.status === 401
+          ? "Your session expired. Please log in again."
+          : err.response?.data?.reply || "⚠️ Server not responding. Please try again later.";
+      const updated = [
+        ...withUser,
+        { from: "bot", text: errorText, source: "database" },
+      ];
+      setMessages(updated);
+      persistHistory(updated);
     }
+
     setSending(false);
+    scrollToBottom();
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === "Enter") handleSend();
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
   };
 
   const handleEmojiClick = (emoji) => {
@@ -114,12 +149,20 @@ const Chatbot = () => {
       ]);
     }
     scrollToBottom();
-    // Optionally: handle file uploads to backend here.
   };
+
+  const clearHistory = () => {
+    setMessages([GREETING]);
+    sessionStorage.removeItem(storageKey(user?.id));
+  };
+
+  const sourceLabel = (source) =>
+    source === "ai"
+      ? { text: "AI guidance", className: "source-ai" }
+      : { text: "Your records", className: "source-db" };
 
   return (
     <>
-      {/* Always show floating chat button */}
       <button
         className="chat-toggle-btn"
         onClick={() => setOpen(true)}
@@ -129,22 +172,35 @@ const Chatbot = () => {
         <ChatIcon />
       </button>
 
-      {/* Overlay and chatbot panel only when open */}
       {open && (
         <div className="chat-overlay" onClick={() => setOpen(false)}>
           <div className="chat-container" onClick={(e) => e.stopPropagation()}>
             <div className="chat-header">
               <div className="header-left">
                 <SmartToyIcon className="bot-icon" />
-                <span className="title">DoseTra AI</span>
+                <div>
+                  <span className="title">DoseTra Health Assistant</span>
+                  <span className="subtitle">Privacy-first · Records stay local</span>
+                </div>
               </div>
-              <button
-                className="close-btn"
-                onClick={() => setOpen(false)}
-                aria-label="Minimize Chat"
-              >
-                <ExpandMoreIcon />
-              </button>
+              <div className="header-actions">
+                <button
+                  className="clear-btn"
+                  onClick={clearHistory}
+                  title="Clear chat history"
+                  type="button"
+                >
+                  Clear
+                </button>
+                <button
+                  className="close-btn"
+                  onClick={() => setOpen(false)}
+                  aria-label="Minimize Chat"
+                  type="button"
+                >
+                  <ExpandMoreIcon />
+                </button>
+              </div>
             </div>
 
             <div className="chat-body" ref={chatBodyRef}>
@@ -159,10 +215,29 @@ const Chatbot = () => {
                 ) : (
                   <div key={idx} className="bot-message">
                     <SmartToyIcon className="bot-icon" />
-                    <div
-                      className={`message${msg.temp ? " thinking" : ""}`}
-                      dangerouslySetInnerHTML={{ __html: msg.text }}
-                    />
+                    <div className="bot-bubble">
+                      {msg.typing ? (
+                        <div className="typing-indicator">
+                          <span />
+                          <span />
+                          <span />
+                        </div>
+                      ) : (
+                        <>
+                          <div
+                            className="message"
+                            dangerouslySetInnerHTML={{ __html: msg.text }}
+                          />
+                          {msg.source && (
+                            <span
+                              className={`source-badge ${sourceLabel(msg.source).className}`}
+                            >
+                              {sourceLabel(msg.source).text}
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </div>
                   </div>
                 )
               )}
@@ -192,10 +267,10 @@ const Chatbot = () => {
 
               <input
                 type="text"
-                placeholder="Type a message..."
+                placeholder="Ask about doses, adherence, or health..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyPress}
                 id="userInput"
                 autoComplete="off"
                 disabled={sending}
@@ -203,9 +278,10 @@ const Chatbot = () => {
 
               <button
                 onClick={handleSend}
-                disabled={sending}
+                disabled={sending || !input.trim()}
                 id="sendBtn"
                 aria-label="Send"
+                type="button"
               >
                 <SendIcon />
               </button>

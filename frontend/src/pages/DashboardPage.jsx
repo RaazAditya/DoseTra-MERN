@@ -10,7 +10,7 @@ import React, { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Pill, Calendar, AlertTriangle, BarChart2 } from "lucide-react";
+import { Pill, Calendar, AlertTriangle, BarChart2, Brain, Clock, TrendingUp } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -24,6 +24,7 @@ import {
 } from "recharts";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { fetchAiPredict, fetchAdherenceInsight } from "@/features/api/aiApi";
 
 // Helper for adherence color
 const getAdherenceColor = (value) => {
@@ -40,6 +41,11 @@ const DashboardPage = () => {
   const notifications = useSelector((state) => state.notifications.items);
   const schedules = useSelector((state) => state.schedules.schedules);
   const doses = useSelector((state) => state.doses.doses);
+  const { user } = useSelector((state) => state.auth);
+
+  const [aiPredict, setAiPredict] = useState(null);
+  const [aiInsight, setAiInsight] = useState(null);
+  const [aiLoading, setAiLoading] = useState(true);
 
   const [summary, setSummary] = useState({
     adherence: 0,
@@ -53,6 +59,26 @@ const DashboardPage = () => {
     dispatch(fetchSchedules());
     dispatch(fetchDoses());
   }, [dispatch]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token || !user) {
+      setAiLoading(false);
+      return;
+    }
+
+    setAiLoading(true);
+    Promise.all([fetchAiPredict(), fetchAdherenceInsight()])
+      .then(([predict, insight]) => {
+        setAiPredict(predict);
+        setAiInsight(insight);
+      })
+      .catch(() => {
+        setAiPredict(null);
+        setAiInsight(null);
+      })
+      .finally(() => setAiLoading(false));
+  }, [user]);
 
   useEffect(() => {
     // normalize arrays safely (handles shape variations)
@@ -138,6 +164,22 @@ const DashboardPage = () => {
         ? Math.round((d.taken / (d.taken + d.missed)) * 100)
         : 0,
   }));
+
+  const aiWeeklyData =
+    aiInsight?.weeklySummary?.daily?.length > 0
+      ? aiInsight.weeklySummary.daily
+      : adherenceData.map((d) => ({ date: d.date, adherence: d.adherence }));
+
+  const predictionChartData = aiPredict
+    ? [
+        { period: "Morning", risk: aiPredict.morningRisk },
+        { period: "Afternoon", risk: aiPredict.afternoonRisk },
+        { period: "Evening", risk: aiPredict.eveningRisk },
+        { period: "Night", risk: aiPredict.nightRisk },
+      ]
+    : [];
+
+  const aiAdherenceScore = aiInsight?.adherencePercentage ?? summary.adherence;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-6 md:p-8">
@@ -269,6 +311,185 @@ const DashboardPage = () => {
           );
         })}
       </div>
+
+      {/* AI Adherence Dashboard */}
+      <motion.div
+        className="mb-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+      >
+        <div className="flex items-center gap-3 mb-6">
+          <Brain className="w-8 h-8 text-indigo-600" />
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">AI Adherence Insights</h2>
+            <p className="text-gray-600 text-sm">
+              Rule-based analytics from your dose history — privacy-first, no external AI required.
+            </p>
+          </div>
+        </div>
+
+        {aiLoading ? (
+          <div className="text-center text-gray-500 py-8">Loading AI insights...</div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              {/* Adherence Score Card */}
+              <Card className="rounded-3xl shadow-xl border border-gray-200">
+                <CardHeader className="flex items-center gap-3">
+                  <Pill className="w-7 h-7 text-blue-600" />
+                  <CardTitle className="text-lg font-semibold">Adherence Score</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-bold text-3xl text-gray-800">{aiAdherenceScore}%</span>
+                    <span
+                      className={`px-3 py-1 text-xs font-semibold rounded-full text-white ${getAdherenceColor(aiAdherenceScore)}`}
+                    >
+                      {aiAdherenceScore >= 80 ? "Excellent" : aiAdherenceScore >= 50 ? "Moderate" : "Needs work"}
+                    </span>
+                  </div>
+                  <Progress value={aiAdherenceScore} className="h-4 rounded-full bg-gray-200 mb-3" />
+                  <p className="text-sm text-gray-600">
+                    {aiInsight?.missedDoseCount ?? 0} missed in the last 30 days
+                    {aiInsight?.weeklySummary?.streak
+                      ? ` · ${aiInsight.weeklySummary.streak}-day streak`
+                      : ""}
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* High Risk Time Card */}
+              <Card className="rounded-3xl shadow-xl border border-gray-200">
+                <CardHeader className="flex items-center gap-3">
+                  <Clock className="w-7 h-7 text-amber-600" />
+                  <CardTitle className="text-lg font-semibold">High Risk Time</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {aiPredict?.highRiskTime ? (
+                    <>
+                      <p className="text-3xl font-bold capitalize text-amber-600">
+                        {aiPredict.highRiskTime}
+                      </p>
+                      <p className="text-sm text-gray-600 mt-2">
+                        {aiPredict.riskPercentage}% miss rate in this window
+                      </p>
+                      {aiInsight?.mostMissedMedicine && (
+                        <p className="text-xs text-gray-500 mt-2">
+                          Most missed: {aiInsight.mostMissedMedicine.name} (
+                          {aiInsight.mostMissedMedicine.missed} doses)
+                        </p>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-gray-600">No high-risk windows detected yet.</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* AI Insights Card */}
+              <Card className="rounded-3xl shadow-xl border border-indigo-100 bg-indigo-50/40">
+                <CardHeader className="flex items-center gap-3">
+                  <Brain className="w-7 h-7 text-indigo-600" />
+                  <CardTitle className="text-lg font-semibold">AI Insights</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-gray-700 mb-3">
+                    {aiInsight?.message || "Log doses to unlock personalized insights."}
+                  </p>
+                  <ul className="space-y-2">
+                    {(aiInsight?.personalizedRecommendations || []).slice(0, 3).map((rec, i) => (
+                      <li key={i} className="text-xs text-gray-600 flex gap-2">
+                        <span className="text-indigo-500">•</span>
+                        <span>{rec}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              {/* Weekly Trend Chart (AI) */}
+              <Card className="rounded-2xl shadow-lg border border-gray-200 p-4">
+                <CardHeader className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-green-600" />
+                  <CardTitle className="text-lg font-semibold">Weekly Trend</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="w-full h-64 md:h-72">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={aiWeeklyData}>
+                        <XAxis
+                          dataKey="date"
+                          tick={{ fontSize: 12, fill: "#6b7280" }}
+                          tickFormatter={(date) =>
+                            new Date(date).toLocaleDateString(undefined, {
+                              month: "short",
+                              day: "numeric",
+                            })
+                          }
+                        />
+                        <YAxis tick={{ fontSize: 12, fill: "#6b7280" }} domain={[0, 100]} />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: "#f3f4f6",
+                            borderRadius: 8,
+                            border: "1px solid #d1d5db",
+                          }}
+                          formatter={(value) => [`${value}%`, "Adherence"]}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="adherence"
+                          stroke="#6366f1"
+                          strokeWidth={3}
+                          dot={{ r: 5 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Prediction Card */}
+              <Card className="rounded-2xl shadow-lg border border-gray-200 p-4">
+                <CardHeader className="flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5 text-red-500" />
+                  <CardTitle className="text-lg font-semibold">Missed Dose Prediction</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-gray-600 mb-4">
+                    {aiPredict?.message || "Predictions appear after enough dose history."}
+                  </p>
+                  <div className="w-full h-64 md:h-72">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={predictionChartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                        <XAxis dataKey="period" tick={{ fontSize: 12, fill: "#6b7280" }} />
+                        <YAxis tick={{ fontSize: 12, fill: "#6b7280" }} domain={[0, 100]} />
+                        <Tooltip
+                          formatter={(value) => [`${value}%`, "Miss risk"]}
+                          contentStyle={{
+                            backgroundColor: "#f3f4f6",
+                            borderRadius: 8,
+                            border: "1px solid #d1d5db",
+                          }}
+                        />
+                        <Bar
+                          dataKey="risk"
+                          fill="#f59e0b"
+                          radius={[8, 8, 0, 0]}
+                          barSize={36}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </>
+        )}
+      </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Weekly Adherence Line Chart */}
