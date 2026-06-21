@@ -109,7 +109,7 @@ const LoggedInLanding = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <h2 className="text-4xl font-bold">Welcome back, {user?.name || "User"} 👋</h2>
+        <h2 className="text-4xl font-bold">Welcome, {user?.name || "User"} 👋</h2>
         <p className="text-lg opacity-90 mt-2">Stay consistent, stay healthy — here’s your daily summary.</p>
       </motion.section>
 

@@ -11,7 +11,7 @@ const transporter = nodemailer.createTransport({
 export const sendEmail = async (to, subject, htmlContent) => {
   try {
     const info = await transporter.sendMail({
-      from: `"DoseTra Reminder!!"`,
+      from: `"DoseTra Reminder" <${process.env.EMAIL_USER}>`,
       to,
       subject,
       html: htmlContent,
