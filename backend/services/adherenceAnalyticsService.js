@@ -1,5 +1,6 @@
 import Dose from "../models/Dose.js";
 import AiPattern from "../models/AIPattern.js";
+import User from "../models/User.js";
 
 const DOSE_POPULATE = {
   path: "scheduleId",
@@ -349,4 +350,26 @@ export const getPersonalizedReminderNote = async (userId, scheduledAt, timezone 
   }
 
   return notes.length ? notes.join(" ") : null;
+};
+
+export const updateUserAiReminderNote = async (
+  userId,
+  scheduledAt = new Date()
+) => {
+  const user = await User.findById(userId);
+
+  const timezone =
+    user?.timezone || process.env.DEFAULT_TIMEZONE || "Asia/Kolkata";
+
+  const note = await getPersonalizedReminderNote(
+    userId,
+    scheduledAt,
+    timezone
+  );
+
+  await User.findByIdAndUpdate(userId, {
+    latestAiReminderNote: note || "",
+  });
+
+  return note;
 };
