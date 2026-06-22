@@ -2,6 +2,7 @@ import Dose from "../models/Dose.js";
 import DoseLog from "../models/DoseLog.js";
 import User from "../models/User.js";
 import { createNotification } from "./notificationController.js"; // your notification helper
+import { updateUserAiReminderNote } from "../services/adherenceAnalyticsService.js";
 
 // Mark dose as taken
 export const markTaken = async (req, res) => {
@@ -13,6 +14,10 @@ export const markTaken = async (req, res) => {
     );
 
     await DoseLog.create({ doseId: req.params.id, action: "taken" });
+    
+    if (req.body.userId) {
+      await updateUserAiReminderNote(req.body.userId).catch(console.error);
+    }
 
     res.json(dose);
   } catch (err) {
@@ -34,7 +39,10 @@ export const markMissed = async (req, res) => {
     }
 
     await DoseLog.create({ doseId: req.params.id, action: "missed" });
-
+    
+    if (req.body.userId) {
+      await updateUserAiReminderNote(req.body.userId).catch(console.error);
+    }
     // Smart Reminder
     const user = await User.findById(req.body.userId); // or req.user._id if using auth middleware
     if (user && user.smartReminders) {
@@ -70,7 +78,9 @@ export const rescheduleDose = async (req, res) => {
     );
 
     await DoseLog.create({ doseId: req.params.id, action: "rescheduled" });
-
+    if (req.body.userId) {
+      await updateUserAiReminderNote(req.body.userId).catch(console.error);
+    }
     res.json(dose);
   } catch (err) {
     console.error("Error rescheduling dose:", err);

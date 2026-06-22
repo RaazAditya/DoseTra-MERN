@@ -49,6 +49,7 @@ const App = () => {
   return (
     <div className="bg-slate-50 min-h-screen flex flex-col">
       <Navbar />
+      <main className="flex-1">
       <Routes>
         <Route path="/" element={<LandingPage/>} />
         <Route path="/register" element={<RegisterPage />} />
@@ -71,7 +72,8 @@ const App = () => {
         <Route path="/notifications" element={<NotificationsPage/>}/>
       </Routes>
       <Chatbot/>
-      <Footer />
+      </main>
+      <Footer/>
     </div>
   );
 };

@@ -3,6 +3,7 @@ import { app } from "./app.js";
 import { initSocket } from "./sockets/socket.js";
 import { startNotificationJob } from "./services/notificationService.js";
 import http from "http";
+import "./services/scheduleService.js";
 
 
 

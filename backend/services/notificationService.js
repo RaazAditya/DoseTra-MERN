@@ -69,10 +69,11 @@ export const startNotificationJob = () => {
           const medicine = schedule?.medicineId;
 
           const personalizedNote =
-            user?.smartReminders && dose?.scheduledAt
-              ? await getPersonalizedReminderNote(userId, dose.scheduledAt, user.timezone || "UTC")
-              : null;
+          user?.smartReminders && user?.latestAiReminderNote
+            ? user.latestAiReminderNote
+            : null;
 
+            
           const doseLine = `Time to take ${dose?.scheduleId?.dosage || medicine?.dosage || ""} of ${
             medicine?.name || "your medicine"
           } at ${dose?.scheduledAt?.toLocaleString() || "the scheduled time"}`;

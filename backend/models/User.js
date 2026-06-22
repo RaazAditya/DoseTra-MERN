@@ -83,6 +83,10 @@ const userSchema = new mongoose.Schema({
     tokenExpiry: { type: Date, select: false },
     lastSyncedAt: { type: Date, default: null },
   },
+  latestAiReminderNote: {
+  type: String,
+  default: "",
+},
 }, { timestamps: true });
 
 export default mongoose.model("User", userSchema);

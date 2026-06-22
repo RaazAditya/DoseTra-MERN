@@ -147,7 +147,7 @@ export default function ScheduleFormPage() {
   if (loading) return <p className="text-center mt-4">Loading...</p>;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-100">
+    <div className="min-h-screen flex items-center justify-center bg-slate-100 pb-28" >
       <div className="bg-white/90 shadow-xl rounded-xl p-6 w-full max-w-lg backdrop-blur-md">
         <h1 className="text-2xl font-bold text-center text-slate-900 mb-6">
           {isEditing ? "Edit Schedule" : "Add Schedule"}

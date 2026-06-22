@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 const CTASection = () => {
   return (
-    <section className="mt-32 bg-slate-900 py-20 text-center text-white rounded-tl-[4rem] rounded-tr-[4rem]">
+    <section className="mt-20 bg-slate-900 py-20 text-center text-white ">
       <h2 className="text-4xl font-bold mb-6">Start Your Wellness Journey Today</h2>
       <p className="text-lg mb-8">Stay healthy, organized, and worry-free with DoseTra.</p>
       <Link to="/register">

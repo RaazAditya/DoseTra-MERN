@@ -1,8 +1,6 @@
-import React from "react";
-
 const Footer = () => {
   return (
-    <footer className="fixed bottom-0 left-0 w-full bg-slate-800 py-6 text-center text-slate-200 z-50">
+    <footer className="bg-slate-800 py-3 mt-8 text-center text-slate-200">
       &copy; {new Date().getFullYear()} DoseTra. All rights reserved.
     </footer>
   );
