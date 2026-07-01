@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon src/server.js"
+    "start": "nodemon server.js",
+    "ingest:medicines": "node scripts/ingestMedicineDataset.js",
+    "ingest:medicines:clear": "node scripts/ingestMedicineDataset.js --clear"
   },
   "keywords": [],
   "author": "",

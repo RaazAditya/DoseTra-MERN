@@ -3,7 +3,7 @@ import fetch from "node-fetch";
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 const DEFAULT_MODEL = "llama-3.3-70b-versatile";
 
-export const askGroq = async ({ systemPrompt, userMessage, temperature = 0.6 }) => {
+export const askGroq = async ({ systemPrompt, userMessage, temperature = 0.6, maxTokens = 512 }) => {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
     throw new Error("GROQ_API_KEY is not configured");
@@ -21,7 +21,7 @@ export const askGroq = async ({ systemPrompt, userMessage, temperature = 0.6 }) 
         { role: "system", content: systemPrompt },
         { role: "user", content: userMessage },
       ],
-      max_tokens: 512,
+      max_tokens: maxTokens,
       temperature,
     }),
   });
