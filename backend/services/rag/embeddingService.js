@@ -1,6 +1,6 @@
 import fetch from "node-fetch";
 
-const DEFAULT_GEMINI_MODEL = "text-embedding-004";
+const DEFAULT_GEMINI_MODEL = "gemini-embedding-001";
 const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta";
 
 export const getEmbeddingConfig = () => ({
@@ -16,32 +16,46 @@ export const embedTexts = async (texts = []) => {
   if (!input.length) return [];
 
   const { apiUrl, apiKey, model } = getEmbeddingConfig();
+
   if (!apiKey) {
     throw new Error("Set GEMINI_API_KEY to use medicine RAG embeddings");
   }
 
   const modelName = normalizeGeminiModel(model);
-  const endpoint = `${apiUrl.replace(/\/$/, "")}/models/${modelName}:batchEmbedContents?key=${apiKey}`;
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      requests: input.map((text) => ({
-        model: `models/${modelName}`,
-        content: {
-          parts: [{ text }],
-        },
-      })),
-    }),
-  });
 
-  if (!response.ok) {
-    const body = await response.text();
-    throw new Error(`Gemini embedding API failed with ${response.status}: ${body}`);
+  const embeddings = [];
+
+  for (const text of input) {
+    const endpoint =
+      `${apiUrl.replace(/\/$/, "")}/models/${modelName}:embedContent?key=${apiKey}`;
+
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        content: {
+          parts: [
+            {
+              text,
+            },
+          ],
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(
+        `Gemini embedding API failed (${response.status}): ${body}`
+      );
+    }
+
+    const data = await response.json();
+
+    embeddings.push(data.embedding.values);
   }
 
-  const data = await response.json();
-  return (data.embeddings || []).map((item) => item.values);
+  return embeddings;
 };

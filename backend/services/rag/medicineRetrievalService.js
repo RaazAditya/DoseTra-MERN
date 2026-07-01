@@ -2,10 +2,9 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { embedTexts } from "./embeddingService.js";
 import {
-  countCollection,
-  getOrCreateCollection,
-  queryDocuments,
-} from "./chromaClient.js";
+  countDocuments,
+  searchDocuments,
+} from "./lanceClient.js";
 import {
   loadDatasetFromFile,
   medicineEntryToText,
@@ -231,59 +230,47 @@ const retrieveFromLocalCsv = (query, userMedicines = [], topK = 4) => {
   }
 };
 
-const mapChromaResults = (result) => {
-  const documents = result.documents?.[0] || [];
-  const metadatas = result.metadatas?.[0] || [];
-  const distances = result.distances?.[0] || [];
 
-  return documents.map((content, index) => {
-    const metadata = metadatas[index] || {};
-    const distance = distances[index];
-    const relevanceScore = typeof distance === "number" ? Math.max(0, 1 - distance) : null;
-
-    return {
-      _id: `${metadata.medicineId || metadata.name || "medicine"}-${metadata.chunkIndex || index}`,
-      name: metadata.name || "Medicine knowledge chunk",
-      genericName: metadata.genericName || "",
-      category: metadata.category || "",
-      drugClass: metadata.drugClass || "",
-      content,
-      relevanceScore,
-      source: metadata.source || "chroma",
-    };
-  });
-};
 
 export const retrieveMedicineContext = async (query, userMedicines = [], options = {}) => {
   const { topK = 4 } = options;
 
   try {
-    const collection = await getOrCreateCollection();
-    const count = await countCollection(collection.id);
+    const count = await countDocuments();
 
     if (!count) {
       return retrieveFromLocalCsv(query, userMedicines, topK);
     }
 
     const [queryEmbedding] = await embedTexts([query]);
-    const result = await queryDocuments({
-      collectionId: collection.id,
+    const rows = await searchDocuments({
       queryEmbedding,
       topK,
     });
 
-    const documents = mapChromaResults(result);
+   const documents = rows.map((row) => ({
+    _id: row.id,
+    name: row.medicineName,
+    genericName: row.genericName,
+    category: row.category,
+    drugClass: row.drugClass,
+    content: row.text,
+    relevanceScore:   row._distance != null
+    ? 1 - row._distance
+    : null,
+    source: row.source || "lancedb",
+  }));
     const userMedicinesReferenced = extractUserMedicineMatches(query, userMedicines);
 
     return {
       documents,
       matchedNames: [...new Set(documents.map((doc) => doc.name).filter(Boolean))],
       userMedicinesReferenced,
-      retrievalMethod: documents.length ? "chroma_embedding" : "none",
+      retrievalMethod: documents.length ? "lancedb_embedding" : "none",
       hasKnowledgeBase: true,
     };
   } catch (err) {
-    console.error("Chroma retrieval error:", err.message);
+    console.error("LanceDB retrieval error:", err.message);
     return retrieveFromLocalCsv(query, userMedicines, topK);
   }
 };

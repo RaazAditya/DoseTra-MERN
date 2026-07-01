@@ -1,10 +1,10 @@
 import "dotenv/config";
 import {
-  getChromaStats,
+  getLanceStats,
   getDefaultDatasetPath,
-  ingestMedicineDatasetToChroma,
+  ingestMedicineDatasetToLance,
   loadDatasetFromFile,
-} from "../services/rag/chromaIngestService.js";
+} from "../services/rag/lanceIngestService.js";
 
 const args = process.argv.slice(2);
 const clearFlag = args.includes("--clear");
@@ -18,7 +18,6 @@ const filePath = fileArg || getDefaultDatasetPath();
 const run = async () => {
   try {
     console.log(`Loading dataset from: ${filePath}`);
-    console.log(`Chroma URL: ${process.env.CHROMA_URL || "http://localhost:8000"}`);
 
     const loadedEntries = loadDatasetFromFile(filePath);
     const entries = Number.isInteger(limit) && limit > 0
@@ -27,18 +26,20 @@ const run = async () => {
 
     console.log(`Found ${entries.length} medicine entries`);
 
-    const results = await ingestMedicineDatasetToChroma(entries, {
+    const results = await ingestMedicineDatasetToLance(entries, {
       clearExisting: clearFlag,
       batchSize,
     });
 
-    console.log("Chroma ingest complete:", results);
+    console.log("LanceDB ingest complete:", results);
 
-    const stats = await getChromaStats();
-    console.log(`Chroma collection "${stats.collection}" now has ${stats.count} chunks`);
+    const stats = await getLanceStats();
+    console.log(`LanceDB table "${stats.table}" now has ${stats.count} chunks`);
     process.exit(0);
   } catch (err) {
-    console.error("Chroma ingest failed:", err.message);
+    console.error("========== ERROR ==========");
+    console.error(err);
+    console.error(err.stack);
     process.exit(1);
   }
 };

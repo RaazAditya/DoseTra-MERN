@@ -1,13 +1,12 @@
+import {
+  insertDocuments,
+  countDocuments,
+  deleteTable,
+  TABLE_NAME,
+} from "./lanceClient.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import { embedTexts } from "./embeddingService.js";
-import {
-  addDocuments,
-  countCollection,
-  deleteCollection,
-  getMedicineCollectionName,
-  getOrCreateCollection,
-} from "./chromaClient.js";
 import {
   chunkText,
   loadDatasetFromFile,
@@ -24,7 +23,7 @@ const stableId = (value) =>
     .replace(/^-|-$/g, "")
     .slice(0, 160);
 
-export const ingestMedicineDatasetToChroma = async (
+export const ingestMedicineDatasetToLance = async (
   entries,
   { clearExisting = false, batchSize = 64 } = {}
 ) => {
@@ -33,24 +32,34 @@ export const ingestMedicineDatasetToChroma = async (
   }
 
   if (clearExisting) {
-    await deleteCollection(getMedicineCollectionName());
+    await deleteTable();
   }
 
-  const collection = await getOrCreateCollection();
   const results = { chunks: 0, medicines: 0, skipped: 0, errors: [] };
   let batch = [];
 
   const flush = async () => {
     if (!batch.length) return;
 
-    const embeddings = await embedTexts(batch.map((item) => item.document));
-    await addDocuments({
-      collectionId: collection.id,
-      ids: batch.map((item) => item.id),
-      documents: batch.map((item) => item.document),
-      metadatas: batch.map((item) => item.metadata),
-      embeddings,
-    });
+  const embeddings = await embedTexts(batch.map((item) => item.text));
+    const rows = batch.map((item, index) => ({
+    id: item.id,
+    text: item.text,
+    vector: embeddings[index],
+
+    medicineId: item.metadata.medicineId,
+    medicineName: item.metadata.name,
+    genericName: item.metadata.genericName,
+    category: item.metadata.category,
+    drugClass: item.metadata.drugClass,
+    source: item.metadata.source,
+    chunkIndex: item.metadata.chunkIndex,
+}));
+
+    if (embeddings.length !== batch.length) {
+  throw new Error("Embedding count mismatch");
+}
+    await insertDocuments(rows);
 
     results.chunks += batch.length;
     batch = [];
@@ -68,10 +77,10 @@ export const ingestMedicineDatasetToChroma = async (
       const chunks = chunkText(baseText);
       const medicineId = stableId(`${medicine.id || medicine.name}-${medicine.name}`);
 
-      chunks.forEach((document, index) => {
+      chunks.forEach((text, index) => {
         batch.push({
           id: `${medicineId}-${index}`,
-          document,
+          text,
           metadata: {
             medicineId,
             name: medicine.name,
@@ -95,7 +104,8 @@ export const ingestMedicineDatasetToChroma = async (
   }
 
   await flush();
-  results.collectionCount = await countCollection(collection.id);
+  results.tableCount = await countDocuments();
+  results.tableName = TABLE_NAME;
   return results;
 };
 
@@ -104,8 +114,10 @@ export { loadDatasetFromFile };
 export const getDefaultDatasetPath = () =>
   path.join(__dirname, "../../data/medicine_dataset.csv");
 
-export const getChromaStats = async () => {
-  const collection = await getOrCreateCollection();
-  const count = await countCollection(collection.id);
-  return { collection: collection.name, count };
+export const getLanceStats = async () => {
+  const count = await countDocuments();
+  return { 
+    table: "medicine_knowledge",
+    count,
+   };
 };
