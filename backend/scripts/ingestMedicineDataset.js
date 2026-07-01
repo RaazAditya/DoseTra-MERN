@@ -1,45 +1,44 @@
 import "dotenv/config";
-import mongoose from "mongoose";
-import connectDB from "../db/database.js";
 import {
-  ingestMedicineDataset,
+  getChromaStats,
+  getDefaultDatasetPath,
+  ingestMedicineDatasetToChroma,
   loadDatasetFromFile,
-  getDefaultSamplePath,
-  getKnowledgeBaseStats,
-} from "../services/rag/ragIngestService.js";
+} from "../services/rag/chromaIngestService.js";
 
 const args = process.argv.slice(2);
 const clearFlag = args.includes("--clear");
-const limitArg = args.find((a) => a.startsWith("--limit="));
+const limitArg = args.find((arg) => arg.startsWith("--limit="));
+const batchArg = args.find((arg) => arg.startsWith("--batch="));
 const limit = limitArg ? Number(limitArg.split("=")[1]) : null;
-const fileArg = args.find((a) => !a.startsWith("--"));
-const filePath = fileArg || getDefaultSamplePath();
+const batchSize = batchArg ? Number(batchArg.split("=")[1]) : 64;
+const fileArg = args.find((arg) => !arg.startsWith("--"));
+const filePath = fileArg || getDefaultDatasetPath();
 
 const run = async () => {
   try {
-    await connectDB();
     console.log(`Loading dataset from: ${filePath}`);
+    console.log(`Chroma URL: ${process.env.CHROMA_URL || "http://localhost:8000"}`);
 
     const loadedEntries = loadDatasetFromFile(filePath);
     const entries = Number.isInteger(limit) && limit > 0
       ? loadedEntries.slice(0, limit)
       : loadedEntries;
+
     console.log(`Found ${entries.length} medicine entries`);
 
-    const results = await ingestMedicineDataset(entries, { clearExisting: clearFlag });
-    console.log("Ingest complete:", results);
+    const results = await ingestMedicineDatasetToChroma(entries, {
+      clearExisting: clearFlag,
+      batchSize,
+    });
 
-    const stats = await getKnowledgeBaseStats();
-    console.log(`Knowledge base now has ${stats.count} medicines`);
-    if (stats.sample.length) {
-      console.log("Sample entries:", stats.sample.map((s) => s.name).join(", "));
-    }
+    console.log("Chroma ingest complete:", results);
 
-    await mongoose.disconnect();
+    const stats = await getChromaStats();
+    console.log(`Chroma collection "${stats.collection}" now has ${stats.count} chunks`);
     process.exit(0);
   } catch (err) {
-    console.error("Ingest failed:", err.message);
-    await mongoose.disconnect();
+    console.error("Chroma ingest failed:", err.message);
     process.exit(1);
   }
 };
