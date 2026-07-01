@@ -4,28 +4,37 @@ import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { CalendarDays, Pill, BarChart3, Brain } from "lucide-react";
+import { CalendarDays, Pill, BarChart3, Brain, Clock } from "lucide-react";
 import WorkflowSection from "./WorkflowSection";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchDoses } from "@/features/doseSlice"; // your doses slice
-import { fetchAdherence } from "../features/api/adherence";
-import { toggleSmartReminder } from "../features/api/settings";
+import {fetchAiPredict, fetchAdherenceInsight} from "@/features/api/aiApi"
+import {useNavigate} from "react-router-dom"
 import { registerPush } from "@/pushNotification.js";
-// ...imports remain the same
 const LoggedInLanding = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { user } = useSelector((state) => state.auth);
   const { doses, loading } = useSelector((state) => state.doses.doses); // Redux
-  const [insight, setInsight] = useState("");
-  const [riskPeriods, setRiskPeriods] = useState([]);
-  const [enabled, setEnabled] = useState(false);
+  const [aiPredict, setAiPredict] = useState(null);
+  const [aiInsight, setAiInsight] = useState(null);
+  const [aiLoading, setAiLoading] = useState(true);
+const [enabled, setEnabled] = useState(
+    user?.settings?.smartReminder ?? false
+);
   const [nextDose, setNextDose] = useState(null);
   const [weeklyAdherence, setWeeklyAdherence] = useState(0);
 
-  const { user } = useSelector((state) => state.auth);
 
   useEffect(() => {
      dispatch(fetchDoses());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (user) {
+        setEnabled(user.settings?.smartReminder ?? false);
+    }
+}, [user]);
 
   // Compute next upcoming dose (any future date)
   useEffect(() => {
@@ -56,17 +65,25 @@ const LoggedInLanding = () => {
 
   // Fetch adherence insights
   useEffect(() => {
-    if (!user?._id) return;
-    fetchAdherence(user._id)
-      .then((data) => {
-        setRiskPeriods(data.riskPeriods || []);
-        setInsight(data.message || "No insights available.");
-      })
-      .catch(() => {
-        setRiskPeriods([]);
-        setInsight("Unable to fetch adherence data.");
-      });
-  }, [user._id]);
+    if (!user) return;
+
+    setAiLoading(true);
+
+    Promise.all([
+        fetchAiPredict(),
+        fetchAdherenceInsight()
+    ])
+        .then(([predict, insight]) => {
+            setAiPredict(predict);
+            setAiInsight(insight);
+        })
+        .catch(() => {
+            setAiPredict(null);
+            setAiInsight(null);
+        })
+        .finally(() => setAiLoading(false));
+
+}, [user]);
 
   // Push notification registration
   useEffect(() => {
@@ -88,17 +105,7 @@ const LoggedInLanding = () => {
     getKeyAndRegister();
   }, []);
 
-  const handleToggle = async () => {
-    const res = await toggleSmartReminder(user._id, !enabled);
-    setEnabled(res.smartReminders);
-  };
 
-  const getInsightClasses = () => {
-    if (insight.startsWith("Great job")) return "bg-green-50 border border-green-200";
-    if (insight.startsWith("⚠️")) return "bg-yellow-50 border border-yellow-200";
-    if (insight.startsWith("Unable")) return "bg-red-50 border border-red-200";
-    return "bg-slate-50 border border-slate-200";
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 px-6 md:px-20 py-10 space-y-10">
@@ -241,7 +248,7 @@ const LoggedInLanding = () => {
       </motion.section>
 
       {/* AI Insights */}
-      <motion.section className={`from-blue-50 to-indigo-100 p-6 rounded-3xl shadow-md flex flex-col md:flex-row items-center justify-between gap-6 ${getInsightClasses()}`}>
+      {/* <motion.section className={`from-blue-50 to-indigo-100 p-6 rounded-3xl shadow-md flex flex-col md:flex-row items-center justify-between gap-6 ${getInsightClasses()}`}>
         <div className="flex items-start gap-3">
           <Brain className="w-8 h-8 text-indigo-600 mt-1" />
           <div>
@@ -255,7 +262,163 @@ const LoggedInLanding = () => {
             {enabled ? "Disable Smart Reminder" : "Enable Smart Reminder"}
           </Button>
         )}
-      </motion.section>
+      </motion.section> */}
+      {/* AI Health Insights */}
+<motion.section
+  className="rounded-3xl bg-gradient-to-br from-indigo-50 via-white to-blue-50 border border-indigo-100 shadow-lg p-8"
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+>
+  <div className="flex items-start justify-between flex-col lg:flex-row gap-8">
+
+    {/* Left */}
+    <div className="flex-1">
+
+      <div className="flex items-center gap-3 mb-5">
+        <Brain className="w-8 h-8 text-indigo-600" />
+        <div>
+          <h3 className="text-2xl font-bold text-slate-800">
+            AI Health Insights
+          </h3>
+          <p className="text-slate-500 text-sm">
+            Personalized medication insights based on your adherence history
+          </p>
+        </div>
+      </div>
+
+      {/* Insight */}
+      <div className="bg-white rounded-2xl border p-5 mb-5">
+        <h4 className="font-semibold text-slate-800 mb-2">
+          💡 Today's Insight
+        </h4>
+
+        <p className="text-slate-600">
+          {aiInsight?.message ||
+            "Keep logging your medicines to unlock personalized AI insights."}
+        </p>
+      </div>
+
+      {/* Recommendations */}
+      {aiInsight?.personalizedRecommendations?.length > 0 && (
+        <div className="bg-white rounded-2xl border p-5">
+
+          <h4 className="font-semibold text-slate-800 mb-3">
+            Recommended Actions
+          </h4>
+
+          <ul className="space-y-2">
+
+            {aiInsight.personalizedRecommendations
+              .slice(0, 3)
+              .map((item, index) => (
+
+                <li
+                  key={index}
+                  className="flex items-start gap-2 text-slate-600"
+                >
+                  <span className="text-green-600 mt-1">✔</span>
+                  <span>{item}</span>
+                </li>
+
+              ))}
+
+          </ul>
+
+        </div>
+      )}
+
+    </div>
+
+    {/* Right */}
+    <div className="w-full lg:w-[320px]">
+
+      <div className="bg-white rounded-2xl border shadow-sm p-6">
+
+        <h4 className="font-semibold text-slate-800 mb-5 flex items-center gap-2">
+          ⚠️ High Risk Time
+        </h4>
+
+        {aiPredict?.highRiskTime ? (
+          <>
+
+            <div className="text-4xl font-bold capitalize text-amber-500">
+              {aiPredict.highRiskTime}
+            </div>
+
+            <p className="text-slate-500 mt-2">
+              Highest probability of missing medicines
+            </p>
+
+            <div className="mt-6 space-y-4">
+
+              <div className="flex justify-between">
+                <span className="text-slate-500">
+                  Miss Probability
+                </span>
+
+                <span className="font-semibold">
+                  {aiPredict.riskPercentage}%
+                </span>
+              </div>
+
+              {aiInsight?.mostMissedMedicine && (
+
+                <div className="flex justify-between">
+
+                  <span className="text-slate-500">
+                    Most Missed
+                  </span>
+
+                  <span className="font-semibold text-right">
+                    {aiInsight.mostMissedMedicine.name}
+                  </span>
+
+                </div>
+
+              )}
+
+            </div>
+
+           <div className="mt-6 text-center">
+  <Button
+    onClick={() => navigate("/get")}
+    className={`w-full rounded-xl ${
+      enabled
+        ? "bg-green-600 hover:bg-green-700"
+        : "bg-indigo-600 hover:bg-indigo-700"
+    }`}
+  >
+    {enabled ? "✓ Smart Reminder Enabled" : "Enable Smart Reminder"}
+  </Button>
+
+  <p className="text-xs text-slate-500 mt-2">
+    {enabled
+      ? "Click to manage reminder settings."
+      : "Enable reminders from your profile settings."}
+  </p>
+</div>
+
+          </>
+        ) : (
+
+          <div className="text-center py-8">
+
+            <Clock className="w-10 h-10 mx-auto text-slate-300 mb-3" />
+
+            <p className="text-slate-500">
+              No high-risk period detected yet.
+            </p>
+
+          </div>
+
+        )}
+
+      </div>
+
+    </div>
+
+  </div>
+</motion.section>
     </div>
   );
 };
