@@ -360,7 +360,7 @@ const DashboardPage = () => {
               </Card>
 
               {/* High Risk Time Card */}
-              <Card className="rounded-3xl shadow-xl border border-gray-200">
+              {/* <Card className="rounded-3xl shadow-xl border border-gray-200">
                 <CardHeader className="flex items-center gap-3">
                   <Clock className="w-7 h-7 text-amber-600" />
                   <CardTitle className="text-lg font-semibold">High Risk Time</CardTitle>
@@ -385,10 +385,10 @@ const DashboardPage = () => {
                     <p className="text-gray-600">No high-risk windows detected yet.</p>
                   )}
                 </CardContent>
-              </Card>
+              </Card> */}
 
               {/* AI Insights Card */}
-              <Card className="rounded-3xl shadow-xl border border-indigo-100 bg-indigo-50/40">
+              {/* <Card className="rounded-3xl shadow-xl border border-indigo-100 bg-indigo-50/40">
                 <CardHeader className="flex items-center gap-3">
                   <Brain className="w-7 h-7 text-indigo-600" />
                   <CardTitle className="text-lg font-semibold">AI Insights</CardTitle>
@@ -406,7 +406,7 @@ const DashboardPage = () => {
                     ))}
                   </ul>
                 </CardContent>
-              </Card>
+              </Card> */}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
