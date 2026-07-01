@@ -13,7 +13,7 @@ import { sendChatMessage } from "@/features/api/chatbotApi";
 
 const GREETING = {
   from: "bot",
-  text: "Hey there 👋<br>I'm your privacy-first Health Assistant. Ask about your <b>next dose</b>, <b>adherence</b>, or general medicine questions. Type <b>help</b> to see what I can do.",
+  text: "Hey there 👋<br>I'm your privacy-first Health Assistant. Ask about your <b>next dose</b>, <b>adherence</b>, or medicine questions like <b>side effects of paracetamol</b> or <b>difference between ibuprofen and paracetamol</b>. Type <b>help</b> to see what I can do.",
 };
 
 const storageKey = (userId) => `dosetra-chat-${userId || "guest"}`;
@@ -94,6 +94,7 @@ const Chatbot = () => {
         from: "bot",
         text: data.reply,
         source: data.source || "database",
+        sources: data.sources || [],
       };
       const updated = [...withUser, botMsg];
       setMessages(updated);
@@ -156,10 +157,40 @@ const Chatbot = () => {
     sessionStorage.removeItem(storageKey(user?.id));
   };
 
-  const sourceLabel = (source) =>
-    source === "ai"
-      ? { text: "AI guidance", className: "source-ai" }
-      : { text: "Your records", className: "source-db" };
+  const sourceLabel = (source) => {
+    if (source === "rag") return { text: "Knowledge base", className: "source-rag" };
+    if (source === "web") return { text: "Web search", className: "source-web" };
+    if (source === "ai") return { text: "AI guidance", className: "source-ai" };
+    return { text: "Your records", className: "source-db" };
+  };
+
+  const renderSources = (sources = []) => {
+    if (!sources.length) return null;
+
+    return (
+      <div className="rag-sources">
+        Sources:{" "}
+        {sources.map((source, index) => {
+          const isObject = typeof source === "object" && source !== null;
+          const label = isObject ? source.title || source.url : source;
+          const url = isObject ? source.url : "";
+
+          return (
+            <React.Fragment key={`${label}-${index}`}>
+              {url ? (
+                <a href={url} target="_blank" rel="noreferrer">
+                  {label}
+                </a>
+              ) : (
+                <span>{label}</span>
+              )}
+              {index < sources.length - 1 ? ", " : ""}
+            </React.Fragment>
+          );
+        })}
+      </div>
+    );
+  };
 
   return (
     <>
@@ -235,6 +266,7 @@ const Chatbot = () => {
                               {sourceLabel(msg.source).text}
                             </span>
                           )}
+                          {renderSources(msg.sources)}
                         </>
                       )}
                     </div>

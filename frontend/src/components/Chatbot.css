@@ -145,6 +145,24 @@
   background: #ede9fe;
   color: #6d28d9;
 }
+.source-rag {
+  background: #d1fae5;
+  color: #047857;
+}
+.source-web {
+  background: #fef3c7;
+  color: #92400e;
+}
+.rag-sources {
+  font-size: 10px;
+  color: #64748b;
+  margin-top: 2px;
+  font-style: italic;
+}
+.rag-sources a {
+  color: #2563eb;
+  text-decoration: underline;
+}
 .typing-indicator {
   display: flex;
   gap: 4px;

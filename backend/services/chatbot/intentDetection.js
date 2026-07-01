@@ -14,6 +14,11 @@ export const isDatabaseIntent = (intent) => DB_INTENTS.has(intent);
 
 export const isMedicineAdviceIntent = (intent) => intent === "MEDICINE_ADVICE";
 
+export const isComparisonIntent = (message) => {
+  const msg = message.toLowerCase();
+  return /\b(difference|differences|compare|comparison|vs\.?|versus|better|which one)\b/.test(msg);
+};
+
 export const detectIntent = (message) => {
   const msg = message.toLowerCase().trim();
 
@@ -97,6 +102,8 @@ export const detectIntent = (message) => {
   }
 
   if (
+    /\b(difference|differences|compare|comparison|vs\.?|versus|better|which one)\b/.test(msg) ||
+    /\b(suggest|recommend|recommendation|alternative|substitute)\b.*\b(medicine|medication|meds?|pill|drug|tablet|capsule|syrup|injection|for)\b/.test(msg) ||
     /\b(side effects?|side-effects|adverse reactions?)\b/.test(msg) ||
     /\b(interact|interaction)\b/.test(msg) ||
     /\b(how (do|should|can) i take|when (should|do) i take)\b/.test(msg) ||
