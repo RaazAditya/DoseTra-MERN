@@ -25,6 +25,7 @@
     "google-auth-library": "^10.7.0",
     "googleapis": "^173.0.0",
     "jsonwebtoken": "^9.0.2",
+    "lancedb": "^0.0.1",
     "mongoose": "^8.18.3",
     "node-cron": "^4.2.1",
     "node-fetch": "^3.3.2",
